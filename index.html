@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="referrer" content="same-origin" />
+<meta name="description" content="Thrive ordering agent for Eurest Cafe, running in a Microsoft Teams window." />
+<title>Thrive Order Agent — Eurest Cafe</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="assets/css/fonts.css" />
+<link rel="stylesheet" href="assets/css/shell.css" />
+<script src="assets/js/theme.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <!-- Centric OS mark (brand guide p18–19); colors flip with theme -->
+    <svg class="mark" viewBox="10 10 60 80" aria-hidden="true">
+      <path class="m-a" d="M50 10 A40 40 0 0 0 50 90 Z"/>
+      <path class="m-b" d="M50 30 A20 20 0 0 0 50 70 Z"/>
+      <path class="m-c" d="M50 30 A20 20 0 0 1 50 70 Z"/>
+    </svg>
+    <div class="wordmark">
+      <div class="sub">Compass Digital</div>
+      <div class="name">Centric OS</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="context">
+    <div class="title">Teams Ordering Agent</div>
+    <div class="desc">Thrive ordering for Eurest Cafe, inside Microsoft Teams</div>
+  </div>
+  <div class="tagline">Powering Today. <b>Shaping Tomorrow.</b></div>
+  <button class="theme-btn" id="themeBtn" type="button" title="Switch theme" aria-label="Switch between light and dark theme">
+    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M20 13.5A8.5 8.5 0 1110.5 4 7 7 0 0020 13.5z"/>
+    </svg>
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.5"/>
+      <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
+</header>
+
+<main class="stage" id="stage">
+  <div class="loading" role="status">Loading Teams…</div>
+  <iframe id="app" class="app" title="Thrive ordering agent in Microsoft Teams"
+          src="teams/ordering.html" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+</main>
+
+<footer>
+  <span class="dot" aria-hidden="true"></span>
+  <span>Centric OS · Teams Ordering Agent</span>
+  <span class="right">© 2026 Compass Digital. All rights reserved.</span>
+</footer>
+
+<script src="assets/js/shell.js" defer></script>
+</body>
+</html>

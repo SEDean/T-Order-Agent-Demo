@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="referrer" content="same-origin" />
+<title>Thrive — Microsoft Teams</title>
+<link rel="stylesheet" href="../assets/css/fonts.css" />
+<script src="../assets/js/theme.js"></script>
+<link rel="stylesheet" href="ordering.css" />
+</head>
+<body>
+<main class="window" role="application" aria-label="Thrive app in Microsoft Teams">
+
+  <!-- Teams titlebar -->
+  <div class="titlebar">
+    <div class="navbtns">
+      <button class="btn-ic" title="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
+      <button class="btn-ic" title="Forward"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></button>
+    </div>
+    <div class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Search or ask Copilot (Ctrl+E)</div>
+    <div class="tright">
+      <button class="btn-ic" title="Settings and more"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+      <span class="winavatar" title="Smith, John">JS<i></i></span>
+    </div>
+  </div>
+
+  <div class="shell">
+    <!-- App rail -->
+    <nav class="rail" aria-label="App bar">
+      <button class="rit" title="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="rbadge">14</span></button>
+      <button class="rit on" title="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 00-7.7 13.7L3 21l4.5-1.2A9 9 0 1012 3z"/></svg><span class="rbadge">2</span></button>
+      <button class="rit" title="Teams"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0"/><circle cx="17" cy="9.5" r="2.3"/><path d="M15.6 14.6a4.6 4.6 0 015 4.4"/></svg><span class="rbadge">1</span></button>
+      <button class="rit" title="Calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l1.5 4.5-2.3 1.7a12 12 0 005.6 5.6l1.7-2.3L20 15v4a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 4z"/></svg></button>
+      <button class="rit" title="OneDrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 18h11a4 4 0 100-8 6 6 0 00-11.3-1.5A4.5 4.5 0 007 18z"/></svg></button>
+      <button class="rit" title="Copilot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/><path d="M18.5 15.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></svg></button>
+      <button class="rit" title="Notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></button>
+      <button class="rit" title="More apps"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+      <button class="rit" title="Add apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg></button>
+      <span class="rsp"></span>
+      <button class="rit" title="People"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0113 0"/></svg></button>
+    </nav>
+
+    <!-- Chat list -->
+    <aside class="clist" aria-label="Chat list">
+      <div class="cl-h">
+        <h2>Chat</h2>
+        <button class="btn-ic" title="Filter"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+        <button class="btn-ic" title="Search chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+        <button class="btn-ic" title="New chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 5l6 6-9.5 9.5H4V15L13 5z"/><path d="M11 7.5l5.5 5.5"/></svg></button>
+      </div>
+      <div class="cl-filters">
+        <button class="pillbtn">Unread</button><button class="pillbtn">Chats</button><button class="pillbtn">Meeting chats</button>
+      </div>
+      <div class="cl-scroll">
+        <div class="cl-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>Copilot</div>
+        <div class="cl-sec"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>Quick views</div>
+        <div class="cl-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M16 12v1.5a2.5 2.5 0 005 0V12a9 9 0 10-3.5 7.1"/></svg>Mentions</div>
+        <div class="cl-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 5l6 6-9.5 9.5H4V15L13 5z"/></svg>Drafts</div>
+        <div class="cl-sec"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>Favorites</div>
+        <div class="cl-sec"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>Chats</div>
+
+        <div class="chat-it unread"><span class="cava" style="background:#0f6cbd">HD<span class="dot av"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Harborview Digital ...</span><span class="ctime">9:52 AM</span></span>
+          <span class="cprev"><span>Sato, Frankie: Still not...</span><span class="udot"></span></span></span></div>
+        <div class="chat-it unread"><span class="cava" style="background:#116149">AC<span class="dot av"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">ACME Centr...</span><span class="ctime">8:45 AM</span></span>
+          <span class="cprev"><span>Marks, Cal: It will. It ...</span><span class="udot"></span></span></span></div>
+        <div class="chat-it sel"><span class="cava bot"><img class="avimg" src="../assets/brand/thrive.png" alt=""><span class="dot av"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Thrive</span><span class="ctime">7/16</span></span>
+          <span class="cprev"><span>Thrive: Pick a spot to order from</span></span></span></div>
+        <div class="chat-it"><span class="cava" style="background:#7a3b8f">JS<span class="dot bsy"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Smith, John (You)</span><span class="ctime">7/15</span></span>
+          <span class="cprev"><span>You: Sent a file</span></span></span></div>
+        <div class="chat-it"><span class="cava" style="background:#8e562e">VK<span class="dot av"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Kapoor, Vinit, +2</span><span class="ctime">7/15</span></span>
+          <span class="cprev"><span>Kapoor, Vinit: Hi John, You ...</span></span></span></div>
+        <div class="chat-it"><span class="cava" style="background:#3b3a39">JG<span class="dot aw"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Gutierrez, Jon</span><span class="ctime">7/15</span></span>
+          <span class="cprev"><span>Possibly</span></span></span></div>
+        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Nexbridge Integration S...</span><span class="ctime">7/15</span></span>
+          <span class="cprev"><span>Chang, Ian: gtg, thank you ev...</span></span></span></div>
+        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
+          <span class="cmain"><span class="crow1"><span class="cname">App Troubleshoot...</span><span class="ctime">7/14</span></span>
+          <span class="cprev"><span>&nbsp;</span></span></span></div>
+        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Solano Launch Openi...</span><span class="ctime">7/14</span></span>
+          <span class="cprev"><span>Sent a file</span></span></span></div>
+        <div class="chat-it"><span class="cava" style="background:#635a83">SB<span class="dot aw"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Bianchi, Serena</span><span class="ctime">7/13</span></span>
+          <span class="cprev"><span>You: Forwarded a message</span></span></span></div>
+        <div class="chat-it"><span class="cava" style="background:#4a5568">CC<span class="dot av"></span></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Calder, Charlie</span><span class="ctime">7/13</span></span>
+          <span class="cprev"><span>You: Is it possible to get a co...</span></span></span></div>
+        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
+          <span class="cmain"><span class="crow1"><span class="cname">Wellness/MRN Cen...</span><span class="ctime">7/13</span></span>
+          <span class="cprev"><span>Recording is ready</span></span></span></div>
+      </div>
+    </aside>
+
+    <section class="chatpane">
+
+  <div class="topbar">
+    <span class="appicon" aria-hidden="true"><img class="avimg" src="../assets/brand/thrive.png" alt=""><span class="presence"></span></span>
+    <span class="apptitle">Thrive</span>
+    <div class="right">
+      <button class="btn-ic" title="Video call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6.5" width="12.5" height="11" rx="2.5"/><path d="M15.5 10.8l4.3-2.6a.5.5 0 01.7.4v6.8a.5.5 0 01-.7.4l-4.3-2.6"/></svg></button>
+      <button class="btn-ic" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+      <button class="btn-ic" title="More options"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Thrive sections">
+    <button class="tab" role="tab" data-tab="home" aria-selected="true">Home</button>
+    <button class="tab" role="tab" data-tab="messages" aria-selected="false">Chat<span class="pill" id="msgPill">1</span></button>
+    <button class="tab" role="tab" data-tab="about" aria-selected="false">About</button>
+  </div>
+
+  <div class="panels">
+    <!-- HOME -->
+    <section class="panel active" data-panel="home" role="tabpanel">
+      <div class="scroll"><div class="home">
+        <h1 class="h1">Welcome to Thrive! 👋</h1>
+        <p class="sub">Your location is set. Start a conversation to place an order!</p>
+        <div class="locrow"><span>📍</span><b>Location:</b> <span class="val" id="locName">Eurest Cafe</span>
+          <button class="btn btn-crimson loc-cta" id="changeLoc">Change Location</button></div>
+        <div class="divider"></div>
+        <div class="sec-title">🤖 My Pre-orders <span class="badge" id="poBadge" hidden></span></div>
+        <div id="poArea"></div>
+      </div></div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="panel" data-panel="messages" role="tabpanel">
+      <div class="scroll" id="chatScroll">
+        <div class="msgs" id="chat">
+          <div class="today"><span>Today</span></div>
+        </div>
+      </div>
+      <div class="composer">
+        <form class="cbox" id="composer" autocomplete="off">
+          <div class="crow">
+            <input id="cinput" placeholder="Type a message" aria-label="Type a message" />
+            <div class="cicons" aria-hidden="false">
+              <button type="button" title="Format" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 5l6 6-9.5 9.5H4V15L13 5z"/><path d="M11 7.5l5.5 5.5"/></svg></button>
+              <button type="button" title="Emoji" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M8.7 14a4.2 4.2 0 006.6 0"/><circle cx="9.3" cy="10" r="1" fill="currentColor"/><circle cx="14.7" cy="10" r="1" fill="currentColor"/></svg></button>
+              <button type="button" title="Attach file" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 11.5l-7.6 7.6a5 5 0 01-7-7L13 4.5a3.4 3.4 0 014.8 4.8l-7.4 7.4a1.8 1.8 0 01-2.6-2.6l6.8-6.8"/></svg></button>
+              <button type="button" title="Loop and more" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg></button>
+              <button class="send" type="submit" title="Send" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4.5 12L20 4.5 16.5 20l-4.3-5.2L4.5 12z"/><path d="M12.2 14.8L20 4.5"/></svg></button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="panel" data-panel="about" role="tabpanel">
+      <div class="scroll"><div class="about">
+        <h2>About Thrive</h2>
+        <p>Thrive is the Eurest Cafe ordering assistant. Open <b>Chat</b> to pick a brand, browse a menu, and build your cart. Save any cart as a recurring <b>pre-order</b> and Thrive will ping you when it's ready to confirm. Your pre-orders live on the <b>Home</b> tab, where you can pause, resume, or cancel them.</p>
+      </div></div>
+    </section>
+
+    <!-- MODAL -->
+    <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal">
+        <div class="modal-h">
+          <span class="mi"><img class="avimg" src="../assets/brand/thrive.png" alt=""></span>
+          <h3 id="modalTitle">Create Pre-order</h3>
+          <button class="x" id="modalX" aria-label="Close">✕</button>
+        </div>
+        <div class="modal-b">
+          <div class="fld"><label for="poNameInput">Pre-order Name</label>
+            <input id="poNameInput" placeholder="e.g. Morning Smoothie" /></div>
+          <div class="fld"><label for="poHour">Pickup Hour</label>
+            <select id="poHour"><option value="">Hour</option></select></div>
+          <div class="fld"><label for="poMin">Pickup Minute</label>
+            <select id="poMin"><option value="">Minute</option></select></div>
+          <div class="fld"><label for="poRec">Recurrence</label>
+            <select id="poRec"><option value="">How often?</option>
+              <option>Daily</option><option>Weekdays</option><option>Weekends</option><option>Weekly</option></select></div>
+        </div>
+        <div class="modal-f">
+          <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+          <button class="btn btn-primary" id="modalCreate">Create</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+    </section><!-- /chatpane -->
+  </div><!-- /shell -->
+</main>
+
+<script src="menu.js"></script>
+<script src="ordering.js"></script>
+</body>
+</html>

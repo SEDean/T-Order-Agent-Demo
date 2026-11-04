@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Thrive — ChatGPT</title>
+<script>
+(function(){
+  function set(t){document.documentElement.dataset.theme = t==="light" ? "light" : "dark";}
+  try{set(localStorage.getItem("centric-theme"));}catch(e){set("dark");}
+  window.addEventListener("message",function(e){
+    var d=e.data;
+    if(d && d.type==="centric-theme"){ set(d.value); try{localStorage.setItem("centric-theme",d.value);}catch(_){} }
+  });
+})();
+</script>
+<style>
+  /* ============================================================
+     ChatGPT skin — Order Agent demo
+     Metrics taken from the reference capture (ChatGPT desktop,
+     150 % zoom, black theme) and normalised to 1×: 260 px sidebar,
+     36 px rows, 14 px labels, 52 px composer, 768 px thread width.
+     ============================================================ */
+  :root{
+    --bg:#000000;        /* main + sidebar (black theme) */
+    --sb:#000000;
+    --hover:#1a1a1a;     /* selected / hover row */
+    --seg:#131313;       /* segmented control track */
+    --seg-on:#1b1b1b;    /* active segment */
+    --seg-bd:#212121;
+    --field:#212121;     /* composer, cards */
+    --field-bd:#2b2b2b;
+    --card:#171717;
+    --card-bd:#2a2a2a;
+    --bubble:#2f2f2f;    /* user message */
+    --text:#ececec; --strong:#ffffff; --muted:#afafaf; --faint:#7d7d7d;
+    --pill-bd:#424242;
+    --accent:#2c67c5;    /* voice button */
+    --danger:#f93a37;
+    --green:#3fb950;
+    --scroll:#333333;
+    --shadow:0 24px 60px rgba(0,0,0,.55);
+    --font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:#141414;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.45;
+    -webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;padding:16px}
+  .window{width:100%;max-width:1300px;height:min(800px,calc(100vh - 32px));background:var(--bg);
+    border:1px solid #262626;border-radius:10px;overflow:hidden;display:flex;box-shadow:var(--shadow);position:relative}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  button:focus-visible,select:focus-visible{outline:2px solid #6b9df5;outline-offset:1px}
+  .composer input:focus{outline:none}
+  .composer:focus-within{border-color:#3a3a3a}
+  svg{display:block}
+  .ic{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--muted);flex:0 0 auto}
+  .ic:hover{background:var(--hover);color:var(--strong)}
+  .ic svg{width:18px;height:18px}
+  .sp{flex:1}
+
+  /* ---------- Sidebar ---------- */
+  .sb{width:260px;flex:0 0 260px;background:var(--sb);display:flex;flex-direction:column;min-height:0;
+    transition:width .18s ease,flex-basis .18s ease}
+  .window.collapsed .sb{width:0;flex-basis:0;overflow:hidden}
+  .sb-top{height:48px;display:flex;align-items:center;gap:2px;padding:0 12px 0 18px;flex:0 0 auto}
+  .wordmark{font-size:18px;font-weight:600;color:var(--strong);letter-spacing:-.01em;white-space:nowrap}
+  .sb-scroll{flex:1;min-height:0;overflow-y:scroll;   /* gutter always reserved, as in the reference */padding:10px 0 12px;scrollbar-width:thin;scrollbar-color:var(--scroll) transparent}
+  .sb-scroll::-webkit-scrollbar{width:8px}
+  .sb-scroll::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:8px}
+  .sb-it{display:flex;align-items:center;gap:8px;width:calc(100% - 12px);margin:0 6px;height:36px;padding:0 10px;border-radius:8px;
+    color:var(--strong);white-space:nowrap;text-align:left;overflow:hidden}
+  .sb-it:hover,.sb-it.sel{background:var(--hover)}
+  .sb-it svg{width:20px;height:20px;flex:0 0 auto;color:var(--strong)}
+  .sb-it .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .sb-it.rc{padding-left:10px}          /* recents: text only, x = 16 px */
+  .sb-h{display:flex;align-items:center;gap:8px;height:36px;margin-top:12px;padding:0 17px;color:var(--muted);white-space:nowrap}
+  .pill{display:none;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;
+    align-items:center;justify-content:center;line-height:1}
+  .pill.on{display:inline-flex}
+  .badge[hidden]{display:none}
+  .badge{display:inline-flex;min-width:18px;height:18px;padding:0 6px;border-radius:9px;background:var(--hover);color:var(--muted);font-size:11px;font-weight:600;align-items:center;justify-content:center}
+  .po-row .lbl small{color:var(--muted);margin-left:6px}
+  .po-empty{padding:2px 17px 0;color:var(--faint);font-size:13px}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg);position:relative}
+  .mh{height:48px;display:flex;align-items:center;padding:0 20px 0 12px;flex:0 0 auto;position:relative}
+  .mh .ic.lead{visibility:hidden}
+  .window.collapsed .mh .ic.lead{visibility:visible}
+  .seg{position:absolute;left:50%;top:6px;transform:translateX(-50%);height:36px;padding:2px;border-radius:999px;background:var(--seg);
+    border:1px solid var(--seg-bd);display:flex}
+  .seg button{height:30px;min-width:105px;padding:0 24px;border-radius:999px;font-weight:600;color:#cdcdcd}
+  .seg button.on{background:var(--seg-on);color:var(--strong)}
+  .mh .tr{margin-left:auto}
+
+  .stage{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+  .view{position:absolute;inset:0;display:none;flex-direction:column}
+  .view.active{display:flex}
+
+  /* chat view: empty (centered) vs chatting (thread + docked composer) */
+  .view-chat{justify-content:center;padding-bottom:40px}   /* optical centre incl. the 48 px header */
+  .view-chat .scroll{display:none;flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--scroll) transparent}
+  .view-chat .scroll::-webkit-scrollbar{width:8px}
+  .view-chat .scroll::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:8px}
+  .main.chatting .view-chat{justify-content:flex-start;padding-bottom:0}
+  .main.chatting .view-chat .scroll{display:block}
+  .main.chatting .empty,.main.chatting .suggest{display:none}
+  .main.chatting .disclaimer{display:block}
+  .empty{text-align:center;padding:0 24px}
+  .empty h1{margin:0 0 32px;font-size:24px;font-weight:500;color:var(--strong);letter-spacing:-.01em}
+
+  .cwrap{width:100%;max-width:800px;margin:0 auto;padding:0 16px;flex:0 0 auto}
+  .composer{display:flex;align-items:center;gap:2px;height:52px;padding:0 8px 0 7px;border-radius:26px;background:var(--field);border:1px solid var(--field-bd)}
+  .composer .ic{width:36px;height:36px;border-radius:50%;color:var(--strong)}
+  .composer .ic svg{width:16px;height:16px}
+  .composer input{flex:1;min-width:0;height:100%;background:transparent;border:0;color:var(--strong);font:inherit;font-size:16px;padding:0 8px 0 8px}
+  .composer input::placeholder{color:var(--strong);opacity:.92}
+  .composer .model{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:15px;padding:0 8px;white-space:nowrap}
+  .composer .model svg{width:14px;height:14px}
+  .composer .voice{width:36px;height:36px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:#fff}
+  .composer .voice svg{width:16px;height:16px}
+  .composer .send{display:none;width:36px;height:36px;border-radius:50%;background:var(--strong);color:#000;place-items:center}
+  .composer .send svg{width:16px;height:16px}
+  .composer.has-text .voice{display:none}
+  .composer.has-text .send{display:grid}
+  .suggest{margin-top:33px;padding:0 16px}
+  .suggest button{display:flex;align-items:center;gap:14px;height:36px;padding:0 10px;border-radius:10px;color:var(--muted);font-size:16px;text-align:left}
+  .suggest button:hover{background:var(--hover);color:var(--strong)}
+  .suggest .emo{font-size:20px;width:22px;text-align:center}
+  .disclaimer{display:none;text-align:center;color:var(--muted);font-size:12px;padding:8px 0 10px}
+
+  /* ---------- Thread ---------- */
+  .thread{max-width:768px;margin:0 auto;padding:16px 16px 24px}
+  .turn{display:flex;gap:14px;margin:0 0 20px;animation:in .16s ease}
+  @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .turn.me{justify-content:flex-end}
+  .turn.me .bubble{max-width:70%;background:var(--bubble);color:var(--strong);border-radius:24px;padding:10px 20px;font-size:16px;line-height:1.5}
+  .turn.me .bubble p{margin:0}
+  .gpt-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex:0 0 auto;margin-top:2px;background:var(--card);border:1px solid var(--card-bd)}
+  .gpt-av img{width:100%;height:100%;object-fit:cover;display:block}
+  .turn.bot .body{flex:1;min-width:0;font-size:16px;line-height:1.6;color:var(--text)}
+  .turn.bot .body p{margin:0 0 10px}
+  .turn.bot .body p:last-child{margin-bottom:0}
+  .turn.bot .body b{color:var(--strong);font-weight:600}
+  .turn.bot .body ul{margin:0 0 10px;padding-left:22px}
+  .turn.bot .body li{margin:2px 0}
+  .typing{width:12px;height:12px;border-radius:50%;background:var(--strong);animation:pulse 1s ease-in-out infinite;margin:6px 0}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.7);opacity:.55}}
+
+  /* cards & buttons (GPT action-style) */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:6px 0 12px}
+  .card{background:var(--card);border:1px solid var(--card-bd);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .card .tile{height:96px;display:grid;place-items:center;position:relative;overflow:hidden}
+  .card .tile img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .tile .emoji{font-size:40px}
+  .card .cb{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .card .cn{color:var(--strong);font-weight:600;font-size:14px;line-height:1.3}
+  .card .cs{color:var(--muted);font-size:12.5px;line-height:1.35}
+  .card .btn{margin-top:auto;align-self:flex-start}
+  .btn{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 14px;border-radius:999px;font-size:13.5px;font-weight:500;
+    border:1px solid var(--pill-bd);color:var(--strong);background:transparent;white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-primary{background:var(--strong);color:#000;border-color:var(--strong)}
+  .btn-primary:hover{background:#e3e3e3}
+  .btn-danger{color:var(--danger);border-color:rgba(249,58,55,.45)}
+  .btn-danger:hover{background:rgba(249,58,55,.1)}
+  .btn-ghost{}
+  .actions,.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+  .chip{display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;border:1px solid var(--pill-bd);color:var(--text);font-size:13.5px;white-space:nowrap}
+  .chip:hover{background:var(--hover);color:var(--strong)}
+
+  .items{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}
+  .item{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:10px 12px}
+  .item .mimg{width:64px;height:64px;border-radius:10px;overflow:hidden;flex:0 0 auto;background:#222}
+  .item .mimg img{width:100%;height:100%;object-fit:cover;display:block}
+  .item .ib{flex:1;min-width:0}
+  .item .line1{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+  .item .nm{color:var(--strong);font-weight:600}
+  .item .pr{color:var(--muted);white-space:nowrap}
+  .item .ds{color:var(--muted);font-size:13px;margin-top:2px}
+  .item .actions{margin:8px 0 0}
+
+  .cartcard{background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:6px 12px;margin:6px 0 10px}
+  .cartline{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--card-bd)}
+  .cartline:last-of-type{border-bottom:0}
+  .cartline .thumb{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;overflow:hidden;font-size:20px;flex:0 0 auto}
+  .cartline .thumb img{width:100%;height:100%;object-fit:cover}
+  .cartline .ci{flex:1;min-width:0}
+  .cartline .cn{color:var(--strong);font-weight:600;font-size:14px}
+  .cartline .cq{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin-top:3px}
+  .qty{display:inline-flex;align-items:center;border:1px solid var(--pill-bd);border-radius:999px;height:26px;overflow:hidden}
+  .qty button{width:26px;height:26px;color:var(--strong);font-size:15px}
+  .qty button:hover{background:var(--hover)}
+  .qty span{min-width:22px;text-align:center;color:var(--strong);font-weight:600}
+  .carttotal{display:flex;gap:8px;align-items:center;padding:10px 0 8px;color:var(--strong);font-weight:600;font-size:15px;border-top:1px solid var(--card-bd)}
+
+  /* ---------- Pre-orders view ---------- */
+  .view-po .scroll{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--scroll) transparent}
+  .po-wrap{max-width:768px;margin:0 auto;padding:12px 16px 32px}
+  .po-wrap h1{font-size:24px;font-weight:600;color:var(--strong);margin:8px 0 4px;letter-spacing:-.01em}
+  .po-wrap .sub{color:var(--muted);margin:0 0 16px;font-size:15px}
+  .locrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:12px 14px;margin-bottom:18px;font-size:15px}
+  .locrow .val{color:var(--strong);font-weight:600}
+  .locrow .btn{margin-left:auto}
+  .sec-title{display:flex;align-items:center;gap:8px;color:var(--strong);font-weight:600;font-size:15px;margin:0 0 10px}
+  .empty-po{color:var(--muted);font-size:15px}
+  .po-list{display:flex;flex-direction:column;gap:10px}
+  .po{background:var(--card);border:1px solid var(--card-bd);border-radius:16px;padding:14px 16px}
+  .po-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .po-name{color:var(--strong);font-weight:600;font-size:15px}
+  .po-status{font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+  .po-status.active{color:var(--green);background:rgba(63,185,80,.14)}
+  .po-status.paused{color:var(--muted);background:var(--hover)}
+  .po-sched{margin-left:auto;color:var(--muted);font-size:13px}
+  .po-meta{color:var(--muted);font-size:13px;margin:4px 0 8px}
+  .po-items{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:4px}
+  .po-items li{display:flex;justify-content:space-between;font-size:14px;color:var(--text)}
+  .po-foot{display:flex;align-items:center;gap:8px;border-top:1px solid var(--card-bd);padding-top:10px}
+  .po-total{color:var(--strong);font-weight:600}
+
+  /* ---------- Modal + toast ---------- */
+  .overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:20}
+  .overlay.show{display:flex}
+  .modal{width:min(440px,calc(100% - 32px));background:var(--bubble);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden}
+  .modal-h{display:flex;align-items:center;gap:10px;padding:18px 20px 6px}
+  .modal-h .mi{width:28px;height:28px;border-radius:50%;overflow:hidden;background:var(--card);flex:0 0 auto}
+  .modal-h .mi img{width:100%;height:100%;object-fit:cover;display:block}
+  .modal-h h3{margin:0;font-size:17px;font-weight:600;color:var(--strong);flex:1}
+  .modal-h .x{width:30px;height:30px;border-radius:50%;color:var(--muted);display:grid;place-items:center}
+  .modal-h .x:hover{background:var(--hover);color:var(--strong)}
+  .modal-b{padding:8px 20px 6px;display:grid;gap:12px}
+  .fld label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+  .fld input,.fld select{width:100%;height:40px;border-radius:10px;border:1px solid var(--pill-bd);background:var(--field);color:var(--strong);font:inherit;font-size:14px;padding:0 12px}
+  .fld select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23afafaf' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center;background-size:16px}
+  .modal-f{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px 20px}
+  .toast{position:absolute;left:50%;top:60px;transform:translate(-50%,-8px);background:var(--strong);color:#000;font-weight:500;font-size:13.5px;
+    padding:9px 14px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:720px){ .sb{display:none} .mh .ic.lead{visibility:visible} .seg button{padding:0 22px} .turn.me .bubble{max-width:85%} }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+
+  /* ==== Light theme (ChatGPT light) ==== */
+  html[data-theme="light"]{
+    --bg:#ffffff; --sb:#f9f9f9; --hover:#ececec; --seg:#f4f4f4; --seg-on:#ffffff; --seg-bd:#e5e5e5;
+    --field:#f4f4f4; --field-bd:#e5e5e5; --card:#ffffff; --card-bd:#e3e3e3; --bubble:#f4f4f4;
+    --text:#0d0d0d; --strong:#0d0d0d; --muted:#5d5d5d; --faint:#8f8f8f; --pill-bd:#d9d9d9; --scroll:#d0d0d0;
+    --shadow:0 24px 60px rgba(0,0,0,.14);
+  }
+  html[data-theme="light"] body{background:#e9e9e9}
+  html[data-theme="light"] .window{border-color:#dcdcdc}
+  html[data-theme="light"] .seg button{color:#5d5d5d}
+  html[data-theme="light"] .composer:focus-within{border-color:#cfcfcf}
+  html[data-theme="light"] .seg button.on{box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  html[data-theme="light"] .btn-primary{background:#0d0d0d;color:#fff;border-color:#0d0d0d}
+  html[data-theme="light"] .btn-primary:hover{background:#2b2b2b}
+  html[data-theme="light"] .composer .send{background:#0d0d0d;color:#fff}
+  html[data-theme="light"] .toast{background:#0d0d0d;color:#fff}
+  html[data-theme="light"] .overlay{background:rgba(0,0,0,.35)}
+  html[data-theme="light"] .pill{background:#e02e2a}
+  html[data-theme="light"] .fld select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235d5d5d' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+</style>
+</head>
+<body>
+<main class="window" role="application" aria-label="Thrive in ChatGPT">
+
+  <!-- ================= Sidebar ================= -->
+  <aside class="sb" aria-label="Sidebar">
+    <div class="sb-top">
+      <span class="wordmark">ChatGPT</span>
+      <span class="sp"></span>
+      <button class="ic" title="Search chats" aria-label="Search chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+      <button class="ic" id="sbToggle" title="Close sidebar" aria-label="Close sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9.5 4v16"/></svg></button>
+    </div>
+    <nav class="sb-scroll" aria-label="Navigation">
+      <button class="sb-it sel" id="newChat" data-nav="new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6.5A2.5 2.5 0 004 6.5v11A2.5 2.5 0 006.5 20h11a2.5 2.5 0 002.5-2.5V12"/><path d="M18.4 3.6a1.9 1.9 0 012.7 2.7L13 14.4l-3.6.9.9-3.6z"/></svg><span class="lbl">New chat</span></button>
+      <button class="sb-it" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5A2.5 2.5 0 016 5h3.6l2 2H18a2.5 2.5 0 012.5 2.5v7A2.5 2.5 0 0118 19H6a2.5 2.5 0 01-2.5-2.5z"/></svg><span class="lbl">Projects</span></button>
+      <button class="sb-it" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span class="lbl">Scheduled</span></button>
+      <button class="sb-it" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h3v14H4zM9.5 5h3v14h-3z"/><path d="M14.6 6l2.9-.8 3.6 13.3-2.9.8z"/></svg><span class="lbl">Library</span></button>
+      <button class="sb-it" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v5M12 15.5v5M3.5 12h5M15.5 12h5"/></svg><span class="lbl">Plugins</span></button>
+      <button class="sb-it" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="16" height="10" rx="3"/><path d="M12 9V5.5M12 5.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z"/><circle cx="9" cy="14" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.1" fill="currentColor" stroke="none"/><path d="M2 12.5v3M22 12.5v3"/></svg><span class="lbl">Agents</span></button>
+      <button class="sb-it" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg><span class="lbl">GPTs</span></button>
+
+      <div class="sb-h">Pinned</div>
+      <button class="sb-it gpt" id="agentChat" data-nav="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg><span class="lbl">Thrive Ordering Agent</span><span class="pill" id="msgPill"></span></button>
+      <button class="sb-it gpt" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg><span class="lbl">Amazon Cafe Menus</span></button>
+      <button class="sb-it gpt" data-nav="static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg><span class="lbl">Order History</span></button>
+
+      <div class="sb-h">Pre-orders <span class="badge" id="poBadge" hidden></span></div>
+      <div id="poList"></div>
+
+      <div class="sb-h">Recents</div>
+      <button class="sb-it rc" data-nav="static"><span class="lbl">Lunch order — Grill</span></button>
+      <button class="sb-it rc" data-nav="static"><span class="lbl">Reschedule morning coffee</span></button>
+      <button class="sb-it rc" data-nav="static"><span class="lbl">Pause Friday pre-order</span></button>
+
+    </nav>
+  </aside>
+
+  <!-- ================= Main ================= -->
+  <section class="main" id="main">
+    <header class="mh">
+      <button class="ic lead" id="sbOpen" title="Open sidebar" aria-label="Open sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9.5 4v16"/></svg></button>
+      <div class="seg" role="tablist" aria-label="Mode">
+        <button class="on" role="tab" aria-selected="true">Chat</button>
+        <button role="tab" aria-selected="false">Work</button>
+      </div>
+      <button class="ic tr" title="Temporary chat" aria-label="Temporary chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.5 12a8.5 8.5 0 11-2.5-6"/><path d="M18 3.5v3h3"/><path d="M12 8v4.5l2.5 1.5"/></svg></button>
+    </header>
+
+    <div class="stage">
+      <!-- CHAT -->
+      <section class="view view-chat active" data-panel="messages" role="tabpanel">
+        <div class="scroll" id="chatScroll">
+          <div class="thread" id="chat"></div>
+        </div>
+        <div class="empty" id="empty"><h1>What's on your mind today?</h1></div>
+        <div class="cwrap">
+          <form class="composer" id="composer" autocomplete="off">
+            <button class="ic" type="button" title="Add files and more" aria-label="Add files and more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+            <input id="cinput" placeholder="Ask ChatGPT" aria-label="Ask ChatGPT" />
+            <button class="model" type="button" title="Response mode" aria-label="Response mode: Instant">Instant<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+            <button class="ic" type="button" title="Dictate" aria-label="Dictate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v3M9 21h6"/></svg></button>
+            <button class="voice" type="button" title="Use voice mode" aria-label="Use voice mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 10v4M9 7v10M12 4v16M15 8v8M19 10v4"/></svg></button>
+            <button class="send" type="submit" title="Send" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+          </form>
+          <div class="suggest" id="suggest">
+            <button type="button" id="startOrder"><span class="emo">🤖</span>Start an order with Thrive</button>
+          </div>
+          <div class="disclaimer">ChatGPT can make mistakes. Check important info.</div>
+        </div>
+      </section>
+
+      <!-- PRE-ORDERS -->
+      <section class="view view-po" data-panel="home" role="tabpanel">
+        <div class="scroll"><div class="po-wrap">
+          <h1>Pre-orders</h1>
+          <p class="sub">Recurring orders Thrive places for you. Pause, resume or cancel any time.</p>
+          <div class="locrow"><span>📍</span><span>Pickup location:</span><span class="val" id="locName">Hilltop Market</span>
+            <button class="btn btn-ghost" id="changeLoc" type="button">Change location</button></div>
+          <div class="sec-title">🕐 My pre-orders</div>
+          <div id="poArea"></div>
+        </div></div>
+      </section>
+    </div>
+
+    <!-- MODAL -->
+    <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal">
+        <div class="modal-h">
+          <span class="mi"><img class="avimg" src="data:image/png;base64,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AABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEL9H/+EXHguD2syAAAAAElFTkSuQmCC" alt=""></span>
+          <h3 id="modalTitle">Create pre-order</h3>
+          <button class="x" id="modalX" aria-label="Close" type="button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="modal-b">
+          <div class="fld"><label for="poNameInput">Pre-order name</label>
+            <input id="poNameInput" placeholder="e.g. Morning Smoothie" /></div>
+          <div class="fld"><label for="poHour">Pickup hour</label>
+            <select id="poHour"><option value="">Hour</option></select></div>
+          <div class="fld"><label for="poMin">Pickup minute</label>
+            <select id="poMin"><option value="">Minute</option></select></div>
+          <div class="fld"><label for="poRec">Recurrence</label>
+            <select id="poRec"><option value="">How often?</option>
+              <option>Daily</option><option>Weekdays</option><option>Weekends</option><option>Weekly</option></select></div>
+        </div>
+        <div class="modal-f">
+          <button class="btn btn-ghost" id="modalCancel" type="button">Cancel</button>
+          <button class="btn btn-primary" id="modalCreate" type="button">Create</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </section>
+</main>
+
+<script>
+"use strict";
+(function(){
+  // ---------- Data (identical to the Slack / Teams / WhatsApp skins) ----------
+  /*GT-ORDER-AGENT*/ /* Georgetown brands (Kokumi + Hilltop Bagel Co) from the CentricOS store; photos come from the host page at runtime */
+  const BRANDS = [{"id":"kokumi","name":"Kokumi","tile":"Kokumi (V4)","note":"Hilltop Market · open now","emoji":"🍜","a":"#151515","b":"#C8102E","cats":["k-appetizers-and-snacks","k-bao-and-fusion-bao","k-bowls","k-beverages"]},{"id":"hilltop","name":"Hilltop Bagel Co","tile":"Hilltop Bagel Co (V4)","note":"Hilltop Market · breakfast & lunch","emoji":"🥯","a":"#1B2A4A","b":"#C98A4B","cats":["h-bagels","h-bagel-egg-sandwiches","h-sides","h-sweets","h-breakfast-sandwiches","h-lunch-sandwiches","h-signature-chopped-bagels"]}];
+  const CATS = [{"id":"k-appetizers-and-snacks","name":"APPETIZERS AND SNACKS","emoji":"🥟","a":"#151515","b":"#C8102E","brand":"kokumi"},{"id":"k-bao-and-fusion-bao","name":"BAO AND FUSION BAO","emoji":"🥙","a":"#151515","b":"#C8102E","brand":"kokumi"},{"id":"k-bowls","name":"BOWLS","emoji":"🍲","a":"#151515","b":"#C8102E","brand":"kokumi"},{"id":"k-beverages","name":"BEVERAGES","emoji":"🧋","a":"#151515","b":"#C8102E","brand":"kokumi"},{"id":"h-bagels","name":"BAGELS","emoji":"🥯","a":"#1B2A4A","b":"#C98A4B","brand":"hilltop"},{"id":"h-bagel-egg-sandwiches","name":"BAGEL EGG SANDWICHES","emoji":"🍳","a":"#1B2A4A","b":"#C98A4B","brand":"hilltop"},{"id":"h-sides","name":"SIDES","emoji":"🥒","a":"#1B2A4A","b":"#C98A4B","brand":"hilltop"},{"id":"h-sweets","name":"SWEETS","emoji":"🍪","a":"#1B2A4A","b":"#C98A4B","brand":"hilltop"},{"id":"h-breakfast-sandwiches","name":"BREAKFAST SANDWICHES","emoji":"🥪","a":"#1B2A4A","b":"#C98A4B","brand":"hilltop"},{"id":"h-lunch-sandwiches","name":"LUNCH SANDWICHES","emoji":"🥪","a":"#1B2A4A","b":"#C98A4B","brand":"hilltop"},{"id":"h-signature-chopped-bagels","name":"SIGNATURE CHOPPED BAGELS","emoji":"🥗","a":"#1B2A4A","b":"#C98A4B","brand":"hilltop"}];
+  const ITEMS = {"k-appetizers-and-snacks":[{"id":"k-edamame-with-sea-salt","name":"Edamame with Sea Salt","desc":"Steamed Edamame Pods, Flaky Sea Salt","price":3.99,"emoji":"🥟","groups":[]},{"id":"k-chili-crisp-edamame-with-sea-salt","name":"Chili Crisp Edamame with Sea Salt","desc":"Steamed Edamame Pods, House Chili Crisp, Flaky Sea Salt","price":3.99,"emoji":"🥟","groups":[]},{"id":"k-pork-kimchi-dumpling","name":"Pork & Kimchi Dumpling","desc":"Pan-Seared Pork and Kimchi Dumplings, Scallion, Black Vinegar Soy","price":4.99,"emoji":"🥟","groups":[]},{"id":"k-edamame-dumpling","name":"Edamame Dumpling","desc":"Steamed Edamame and Ginger Dumplings, Sesame Soy Dipping Sauce","price":4.49,"emoji":"🥟","groups":[]},{"id":"k-beef-and-vegetable-dumplings","name":"Beef and Vegetable Dumplings","desc":"Pan-Seared Beef, Cabbage and Carrot Dumplings; Sesame Soy Dipping Sauce available","price":4.99,"emoji":"🥟","groups":[{"name":"Dipping Sauce","mods":[{"name":"Sesame Soy Dipping Sauce","price":0.49}]}]},{"id":"k-korean-fried-chicken-wings","name":"Korean Fried Chicken Wings","desc":"Double-Fried Chicken Wings, Honey Garlic Sauce, Toasted Sesame, Scallion","price":5.99,"emoji":"🥟","groups":[]},{"id":"k-spicy-cucumber-sesame-salad","name":"Spicy Cucumber Sesame Salad","desc":"Smashed Cucumber, Chili Oil, Rice Vinegar, Garlic, Toasted Sesame","price":4.99,"emoji":"🥟","groups":[]}],"k-bao-and-fusion-bao":[{"id":"k-slow-roasted-pork-bao","name":"Slow Roasted Pork Bao","desc":"Slow Roasted Pork Belly, Hoisin, Pickled Cucumber, Cilantro, Steamed Bao Bun","price":4.99,"emoji":"🥙","groups":[]},{"id":"k-sweet-spicy-tofu-bao","name":"Sweet & Spicy Tofu Bao","desc":"Crispy Tofu, Sweet Chili Glaze, Pickled Carrot, Scallion, Steamed Bao Bun","price":3.99,"emoji":"🥙","groups":[]},{"id":"k-korean-bbq-chicken-bao","name":"Korean BBQ Chicken Bao","desc":"Gochujang-Glazed Chicken Thigh, Kimchi Slaw, Sesame, Steamed Bao Bun","price":4.99,"emoji":"🥙","groups":[]},{"id":"k-sesame-chicken-bao-bun","name":"Sesame Chicken Bao Bun","desc":"Crispy Sesame Chicken, Pickled Cucumber, Scallion, Steamed Bao Bun","price":4.99,"emoji":"🥙","groups":[]},{"id":"k-sesame-ginger-tuna-bao","name":"Sesame Ginger Tuna Bao","desc":"Seared Sesame Ginger Tuna, Wasabi Aioli, Pickled Cucumber, Steamed Bao Bun","price":6.99,"emoji":"🥙","groups":[]},{"id":"k-spicy-cauliflower-bao","name":"Spicy Cauliflower Bao","desc":"Crispy Gochujang Cauliflower, Pickled Carrot, Cilantro, Steamed Bao Bun","price":3.99,"emoji":"🥙","groups":[]},{"id":"k-nashville-hot-chicken-bao","name":"Nashville Hot Chicken Bao","desc":"Nashville Hot Fried Chicken, Pickle, Kewpie Slaw, Steamed Bao Bun","price":4.99,"emoji":"🥙","groups":[]}],"k-bowls":[{"id":"k-korean-bibimbap-and-bulgogi-bowls","name":"Korean Bibimbap and Bulgogi Bowls","desc":"Steamed Rice, Sauteed Spinach, Carrot, Bean Sprouts, Kimchi, Fried Egg, Gochujang; Choice of Bulgogi Beef, Chicken or Tofu","price":8.99,"emoji":"🍲","groups":[{"name":"Choice of Protein","mods":[{"name":"Beef","price":0.0},{"name":"Chicken","price":0.0},{"name":"Tofu","price":0.0}]}]},{"id":"k-orange-chicken-and-fried-rice-bowl","name":"Orange Chicken and Fried Rice Bowl","desc":"Crispy Orange Chicken, Vegetable Fried Rice, Scallion, Sesame","price":8.99,"emoji":"🍲","groups":[]},{"id":"k-korean-fried-chicken-bowl","name":"Korean Fried Chicken Bowl","desc":"Crispy Korean Fried Chicken, Steamed Rice, Kimchi, Pickled Radish, Gochujang Mayo","price":8.99,"emoji":"🍲","groups":[]},{"id":"k-teriyaki-salmon-rice-bowl-with-sesame","name":"Teriyaki Salmon Rice Bowl with Sesame","desc":"Teriyaki-Glazed Salmon, Steamed Rice, Broccoli, Edamame, Pickled Ginger, Toasted Sesame","price":10.99,"emoji":"🍲","groups":[]},{"id":"k-miso-udon-noodle-bowl","name":"Miso Udon Noodle Bowl","desc":"Udon Noodles, Miso Broth, Bok Choy, Shiitake Mushroom, Soft Egg, Scallion","price":7.99,"emoji":"🍲","groups":[]},{"id":"k-crispy-rice-bowl","name":"Crispy Rice Bowl","desc":"Crispy Sushi Rice, Cucumber, Avocado, Edamame, Spicy Mayo, Sesame; With Choice of Grilled Beef, Chicken or Tofu","price":8.99,"emoji":"🍲","groups":[{"name":"Choice of Protein","mods":[{"name":"Beef","price":0.0},{"name":"Chicken","price":0.0},{"name":"Tofu","price":0.0}]}]},{"id":"k-miso-carrot-ginger-glass-noodle-salad","name":"Miso Carrot Ginger Glass Noodle Salad","desc":"Glass Noodles, Shredded Carrot, Cucumber, Edamame, Cilantro, Miso Carrot Ginger Dressing","price":6.99,"emoji":"🍲","groups":[]},{"id":"k-asian-bbq-shrimp-bowl","name":"Asian BBQ Shrimp Bowl","desc":"Char-Grilled BBQ Shrimp, Jasmine Rice, Pineapple Salsa, Bok Choy, Sesame","price":9.99,"emoji":"🍲","groups":[]}],"k-beverages":[{"id":"k-milk-tea","name":"Milk Tea","desc":"Black Tea, Milk, Brown Sugar Syrup, Served Iced","price":5.99,"emoji":"🧋","groups":[]},{"id":"k-matcha-tea-with-cucumber-lemon","name":"Matcha Tea with Cucumber Lemon","desc":"Ceremonial Matcha, Cucumber, Lemon, Sparkling Water, Served Iced","price":5.99,"emoji":"🧋","groups":[]},{"id":"k-agave-lemonade","name":"Agave Lemonade","desc":"Fresh Lemon Juice, Agave Nectar, Filtered Water, Served Iced","price":5.99,"emoji":"🧋","groups":[]},{"id":"k-seasonal-lemonade-strawberry-matcha","name":"Seasonal Lemonade: Strawberry Matcha","desc":"Fresh Lemon Juice, Strawberry Puree, Matcha, Agave, Served Iced","price":5.99,"emoji":"🧋","groups":[]}],"h-bagels":[{"id":"h-plain-bagel","name":"Plain Bagel","desc":"Hand-Rolled, Kettle-Boiled Plain Bagel; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-poppy-bagel","name":"Poppy Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Poppy Seeds; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-sesame-bagel","name":"Sesame Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Toasted Sesame Seeds; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-everything-bagel","name":"Everything Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Everything Spice; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-pumpernickel-bagel","name":"Pumpernickel Bagel","desc":"Hand-Rolled, Kettle-Boiled Pumpernickel Bagel; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-cinnamon-raisin-bagel","name":"Cinnamon Raisin Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Cinnamon, Raisins; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-multigrain-bagel","name":"Multigrain Bagel","desc":"Hand-Rolled, Kettle-Boiled Multigrain Bagel, Oats, Flax, Sunflower Seeds; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-asiago-cheese-bagel","name":"Asiago Cheese Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Baked Asiago Cheese; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-french-toast-bagel","name":"French Toast Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Cinnamon, Vanilla, Maple Sugar; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-cheddar-jalapeno-bagel","name":"Cheddar Jalapeno Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Cheddar, Pickled Jalapeno; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-blueberry-bagel","name":"Blueberry Bagel","desc":"Hand-Rolled, Kettle-Boiled Bagel, Wild Blueberries; Choice of Spread","price":2.99,"emoji":"🥯","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]}],"h-bagel-egg-sandwiches":[{"id":"h-cage-free-egg-and-cheddar","name":"Cage-Free Egg and Cheddar","desc":"Cage-Free Egg Souffle, Cheddar, Choice of Bagel","price":7.99,"emoji":"🍳","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-applewood-smoked-bacon-cage-free-egg-and-cheddar","name":"Applewood Smoked Bacon, Cage-Free Egg and Cheddar","desc":"Applewood Smoked Bacon, Cage-Free Egg Souffle, Cheddar, Choice of Bagel","price":7.99,"emoji":"🍳","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-sausage-cage-free-egg-and-cheddar","name":"Sausage, Cage-Free Egg and Cheddar","desc":"Pork Sausage, Cage-Free Egg Souffle, Cheddar, Choice of Bagel","price":7.99,"emoji":"🍳","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-black-forest-ham-cage-free-egg-and-swiss","name":"Black Forest Ham, Cage-Free Egg and Swiss","desc":"Black Forest Ham, Cage-Free Egg Souffle, Swiss, Choice of Bagel","price":7.99,"emoji":"🍳","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-turkey-sausage-cage-free-egg-white-and-cheddar","name":"Turkey Sausage, Cage-Free Egg White and Cheddar","desc":"Turkey Sausage, Cage-Free Egg White, Cheddar, Choice of Bagel","price":7.99,"emoji":"🍳","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-cage-free-egg-white-mozzarella-basil-pesto-and-tomato","name":"Cage-Free Egg White, Mozzarella, Basil Pesto and Tomato","desc":"Cage-Free Egg White, Fresh Mozzarella, Basil Pesto, Tomato, Choice of Bagel","price":7.99,"emoji":"🍳","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-spicy-egg-white-and-turkey-sausage-sesame-salsa-macha-avocado-cheddar-jalapeno-bagel","name":"Spicy Egg White and Turkey Sausage, Sesame Salsa Macha, Avocado, Cheddar Jalapeno Bagel","desc":"Cage-Free Egg White, Turkey Sausage, Sesame Salsa Macha, Avocado, Cheddar Jalapeno Bagel","price":7.99,"emoji":"🍳","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]}],"h-sides":[{"id":"h-miss-vickie-s-potato-chips","name":"Miss Vickie's Potato Chips","desc":"Miss Vickie's Kettle Cooked Potato Chips, Assorted Flavors","price":1.99,"emoji":"🥒","groups":[]},{"id":"h-deli-dill-pickles","name":"Deli Dill Pickles","desc":"Whole Kosher Dill Pickle, Sliced","price":1.99,"emoji":"🥒","groups":[]},{"id":"h-bagel-chips-and-choice-of-spreads","name":"Bagel Chips and Choice of Spreads","desc":"House-Baked Bagel Chips; Choice of Spread","price":1.99,"emoji":"🥒","groups":[{"name":"Choice of Spread","mods":[{"name":"Salted Whipped Butter","price":0.0},{"name":"Plain Cream Cheese","price":0.0},{"name":"Strawberry Cream Cheese","price":0.0},{"name":"Jalapeno Cheddar Cream Cheese","price":0.0},{"name":"Miso Scallion Cream Cheese","price":0.0},{"name":"Harissa Honey Cream Cheese","price":0.0},{"name":"Apple Pie Cream Cheese","price":0.0},{"name":"Sesame Salsa Macha Cream Cheese","price":0.0},{"name":"Avocado Spread","price":0.0},{"name":"Vegan Tofu Herb and Vegetable Cream Cheese","price":0.0},{"name":"Classic Hummus","price":0.0}]}]},{"id":"h-snacking-bacon","name":"Snacking Bacon","desc":"Thick-Cut Applewood Smoked Bacon, Brown Sugar, Black Pepper","price":1.99,"emoji":"🥒","groups":[]}],"h-sweets":[{"id":"h-sweet-street-manifesto-bars","name":"Sweet Street Manifesto Bars","desc":"Sweet Street Manifesto Bars, Assorted Flavors","price":1.99,"emoji":"🍪","groups":[]},{"id":"h-seasonal-cake-slices","name":"Seasonal Cake Slices","desc":"Seasonal Cake Slice, Baked Daily","price":1.99,"emoji":"🍪","groups":[]},{"id":"h-black-and-white-cookies","name":"Black and White Cookies","desc":"Classic New York Black and White Cookie, Vanilla and Chocolate Fondant","price":1.99,"emoji":"🍪","groups":[]}],"h-breakfast-sandwiches":[{"id":"h-farmers-market-avocado","name":"Farmers Market Avocado","desc":"Tofu Herb Cream Cheese, Avocado Spread, Lettuce, Tomato, Cucumber, Onions, Plain Bagel","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-lox","name":"Lox","desc":"Smoked Salmon, Plain Cream Cheese, Tomatoes, Onions, Lemon, Capers, Poppy Bagel","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-blt","name":"BLT","desc":"Applewood Smoked Bacon, Lettuce, Tomato, Plain Cream Cheese, Asiago Bagel","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-berry","name":"Berry","desc":"Strawberry Cream Cheese, Fresh Berries, Granola, Honey, Blueberry Bagel","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-french-toast-sandwich","name":"French Toast Sandwich","desc":"Applewood Bacon, Apple Pie Cream Cheese, Honey, Flaky Sea Salt, French Toast Bagel","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-sesame-sriracha","name":"Sesame Sriracha","desc":"Miso Scallion, Furikake, Avocado, Cucumber, Sriracha, Scallions, Cage-Free Hard-Boiled Egg, Sesame Bagel","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-harissa-honey","name":"Harissa Honey","desc":"Harissa Honey Cream Cheese, Honey, Sea Salt, Aleppo Pepper, Sesame Bagel","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-everything-avocado-toast","name":"Everything Avocado Toast","desc":"Miso Scallion Cream Cheese Avocado Spread, Everything Bagel Spice, Flaky Sea Salt","price":10.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]}],"h-lunch-sandwiches":[{"id":"h-everything-brunch-lox","name":"Everything Brunch Lox","desc":"Miso Scallion Cream Cheese, Lox, Tomato Cucumber, Scallions, Capers, Everything Bagel Spice and Sea Salt on Everything Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-turkey-bacon-avocado","name":"Turkey, Bacon, Avocado","desc":"Applewood Smoked Bacon, Roasted Turkey, Avocado Spread, Lettuce, Tomato and Onion on an Asiago Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-ham-and-swiss","name":"Ham and Swiss","desc":"Black Forest Ham, Swiss, Lettuce, Tomato, Onion, Honey Mustard Aioli on a Sesame Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-spicy-blt","name":"Spicy BLT","desc":"Jalapeno Cheddar Cream Cheese, Applewood Smoked Bacon, Lettuce, Tomato, Onion on a Cheddar Jalapeno Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-garden-veggie-and-hummus","name":"Garden Veggie and Hummus","desc":"Tofu Herb Cream Cheese, Hummus, Lettuce, Tomato, Onion, Cucumbers and Scallions on a Sesame Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-turkey","name":"Turkey","desc":"With Cheddar, Mayonnaise, Lettuce, Tomato and Onion on a Plain Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-caprese","name":"Caprese","desc":"Sliced Tomato, Fresh Mozzarella, Basil Pesto, Lettuce and Balsamic Glaze on a Sesame Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-spicy-turkey","name":"Spicy Turkey","desc":"Sesame Salsa Macha, Roasted Turkey, Cheddar, Tomato, Lettuce, Onions and Avocado on Sesame Bagel","price":12.99,"emoji":"🥪","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]}],"h-signature-chopped-bagels":[{"id":"h-cobb-salad-bagel","name":"Cobb Salad Bagel","desc":"Plain Cream Cheese, Applewood Smoked Bacon, Cage-Free Hard-Boiled Egg, Tomatoes, Lettuce, Cucumbers, Cheddar and Ranch Spice","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-pimento-cheese-blt","name":"Pimento Cheese BLT","desc":"Cheddar Jalapeno Cream Cheese, Applewood Smoked Bacon, Lettuce, Tomato, Cheddar and Roasted Red Peppers","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-chicken-caesar-chopped-bagel","name":"Chicken Caesar Chopped Bagel","desc":"Grilled Chicken, Romaine Lettuce, Parmesan Cheese, Bagel Chip Croutons, Plain Cream Cheese and Caesar Dressing","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-everything-lox-chopped-bagel","name":"Everything Lox Chopped Bagel","desc":"Miso Scallion Cream Cheese, Lox, Tomato, Caper, Scallions, Lettuce and Everything Spice","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-triple-berry-honey","name":"Triple Berry Honey","desc":"Strawberry Cream Cheese, Seasonal Berry Blend, Honey and Granola","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-chicken-caprese","name":"Chicken Caprese","desc":"Fresh Mozzarella, Grilled Chicken, Basil Pesto, Tomato, Lettuce, Onion and Balsamic","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-vegan-garden-vegetable","name":"Vegan Garden Vegetable","desc":"Herb Tofu Cream Cheese, Roasted Red Peppers, Lettuce, Tomato, Onion, Carrots, Cucumber and Scallion","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-chicken-bacon-ranch","name":"Chicken Bacon Ranch","desc":"Grilled Chicken, Applewood Smoked Bacon, Plain Cream Cheese, Ranch Spice, Lettuce, Tomatoes and Cheddar","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]},{"id":"h-bec","name":"BEC","desc":"Cage-Free Hard-Boiled Egg, Applewood Smoked Bacon, Cheddar, Lettuce, Tomato, Onion and Dijon Aioli","price":12.99,"emoji":"🥗","groups":[{"name":"Add-Ons","mods":[{"name":"Bacon","price":1.0},{"name":"Sausage","price":1.0},{"name":"Turkey Sausage","price":1.0},{"name":"Ham","price":1.0},{"name":"Cage-Free Hard-Boiled Egg","price":1.0},{"name":"Egg Souffle/Fried Egg","price":1.0},{"name":"Avocado","price":1.0},{"name":"Lox","price":1.0}]}]}]};
+  const ITEM = {};
+  Object.values(ITEMS).forEach(a=>a.forEach(i=>ITEM[i.id]=i));
+  const catsFor=()=>state.brand?CATS.filter(c=>c.brand===state.brand.id):CATS;
+  /* Photos: the clone runs in a same-origin srcdoc frame inside Centric OS, so item
+     photos and brand tiles resolve from the host's maps instead of being baked in. */
+  const HOST=(()=>{ let w=window; for(let k=0;k<4;k++){ try{ if(w.GRILL_PHOTOS||w.brandLib) return w; w=w.parent; }catch(e){ break; } } return null; })();
+  const IMG=new Proxy({},{get:(_,id)=>{ try{
+      if(!HOST) return null;
+      const br=BRANDS.find(b=>b.id===id);
+      if(br){ const lib=HOST.brandLib||{}; const m=/src="([^"]+)"/.exec((lib[br.tile]||{}).label||""); return m?m[1]:null; }
+      const ct=CATS.find(c=>c.id===id); /*SB*/ /* category tile = photo of the category's first (photographed) item */
+      if(ct){ const ph=HOST.GRILL_PHOTOS||{}; for(const i of (ITEMS[id]||[])){ const p=ph[i.name.toLowerCase()]; if(p) return p; } return null; }
+      const it=ITEM[id]; if(!it) return null;
+      const base=it.base?ITEM[it.base]:it;
+      return (HOST.GRILL_PHOTOS||{})[base.name.toLowerCase()]||null;
+    }catch(e){ return null; } }});
+  const LOCATIONS = [(()=>{ /*SB*/ /* pickup follows the visible Centric site: Amazon Cafe / Hilltop Market */
+    try{ const n=HOST&&HOST.__siteName?HOST.__siteName():""; if(/georgetown/i.test(n)) return "Hilltop Market"; if(n) return n; }catch(e){}
+    return "Hilltop Market"; })()];
+  BRANDS.forEach(b=>{ if(b.note) b.note=b.note.replace(/Hilltop Market/,LOCATIONS[0]); });   /* brand-card notes name the pickup site too */
+  setTimeout(()=>{ try{ const l=document.getElementById("locName"); if(l) l.textContent=LOCATIONS[0]; }catch(e){} },0);
+  const REC_WORD = {Daily:"daily",Weekdays:"weekdays",Weekends:"weekends",Weekly:"weekly"};
+
+  // Views: "messages" = chat thread, "home" = pre-orders manager (names kept so the
+  // shared flow's unread logic — bot() → bumpUnread() when state.tab !== "messages" — holds).
+  const state = { cart:{}, preorders:[], poSeq:1, locIdx:0, brand:null, tab:"messages", busy:false, pending:null, started:false };
+
+  // ---------- helpers ----------
+  const $=s=>document.querySelector(s);
+  const money=n=>"$"+n.toFixed(2);
+  const count=()=>Object.values(state.cart).reduce((a,b)=>a+b,0);
+  const total=()=>Object.entries(state.cart).reduce((s,[id,q])=>s+ITEM[id].price*q,0);
+  const reduced=()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function el(t,p,...k){const n=document.createElement(t);
+    if(p)for(const key in p){if(key==="class")n.className=p[key];else if(key==="html")n.innerHTML=p[key];
+      else if(key.startsWith("on")&&typeof p[key]==="function")n.addEventListener(key.slice(2),p[key]);
+      else if(p[key]!=null)n.setAttribute(key,p[key]);}
+    k.flat().forEach(c=>c!=null&&n.append(c.nodeType?c:document.createTextNode(c)));return n;}
+  const AVATAR="data:image/png;base64,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AABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEIRAAAQigAAgFAEAACEIgAAIBQBAAChCAAACEUAAEAoAgAAQhEAABCKAACAUAQAAIQiAAAgFAEAAKEIAAAIRQAAQCgCAABCEQAAEIoAAIBQBAAAhCIAACAUAQAAoQgAAAhFAABAKAIAAEL9H/+EXHguD2syAAAAAElFTkSuQmCC";
+  const main=$("#main"), chat=$("#chat"), scroll=$("#chatScroll");
+  const down=()=>{scroll.scrollTop=scroll.scrollHeight;};
+
+  // ---------- message turns (ChatGPT layout: user = right bubble, assistant = avatar + prose) ----------
+  function beginChat(){ if(state.started)return; state.started=true; main.classList.add("chatting"); selectNav("chat"); }
+  function rowEl(bot){
+    beginChat();
+    if(bot){
+      const av=el("div",{class:"gpt-av"},el("img",{src:AVATAR,alt:"Thrive"}));
+      const body=el("div",{class:"body"});
+      chat.append(el("div",{class:"turn bot"},av,body)); down(); return body;
+    }
+    const bubble=el("div",{class:"bubble"});
+    chat.append(el("div",{class:"turn me"},bubble)); down(); return bubble;
+  }
+  function you(text){ rowEl(false).append(el("p",null,text)); }
+  function bot(cb,delay=520){
+    const body=rowEl(true); const t=el("div",{class:"typing"}); body.append(t); down();
+    state.busy=true;
+    setTimeout(()=>{ t.remove(); cb(body); down(); state.busy=false;
+      if(state.tab!=="messages") bumpUnread(); }, reduced()?0:delay);
+  }
+  let unread=0;
+  function bumpUnread(){ unread++; const p=$("#msgPill"); p.textContent=unread; p.classList.add("on"); }
+  function clearUnread(){ unread=0; $("#msgPill").classList.remove("on"); }
+
+  function actions(body,defs){
+    const w=el("div",{class:"actions"});
+    defs.filter(Boolean).forEach(d=>{const cls=d.kind==="primary"?"btn btn-primary":d.kind==="danger"?"btn btn-danger":"btn btn-ghost";
+      w.append(el("button",{class:cls,type:"button",onclick:()=>{if(!state.busy)d.on();}},d.label));});
+    body.append(w);
+  }
+  function chips(body,defs){
+    const w=el("div",{class:"chips"});
+    defs.forEach(d=>w.append(el("button",{class:"chip",type:"button",onclick:()=>{if(!state.busy)d.on();}},d.label)));
+    body.append(w);
+  }
+  /* Cards render inside a grid; callers append tiles to the last .cards grid of the body. */
+  function grid(body){ let g=body.lastElementChild; if(!g||!g.classList.contains("cards")){g=el("div",{class:"cards"});body.append(g);} return g; }
+  function tile(obj,onSelect){
+    const card=el("div",{class:"card"},
+      el("div",{class:"tile",style:`background:linear-gradient(135deg,${obj.a},${obj.b})`},
+        IMG[obj.id]?el("img",{src:IMG[obj.id],alt:obj.name}):el("div",{class:"emoji"},obj.emoji)),
+      el("div",{class:"cb"},el("div",{class:"cn"},obj.name),obj.note?el("div",{class:"cs"},obj.note):null,
+        el("button",{class:"btn btn-ghost",type:"button",onclick:()=>{if(!state.busy)onSelect();}},"Select")));
+    return card;
+  }
+  const tiles=(body,list,onPick)=>{const g=grid(body);list.forEach(o=>g.append(tile(o,()=>onPick(o.id))));};
+
+  // ---------- flow ----------
+  function greet(){
+    bot(b=>{
+      b.append(el("p",null,"Hey! 👋 I'm ",el("b",null,"Thrive"),". You're ordering at ",el("b",null,LOCATIONS[state.locIdx]),"."));
+      b.append(el("p",null,"Pick a spot to order from:"));
+      tiles(b,BRANDS,chooseBrand);
+    },260);
+  }
+  function chooseBrand(id){
+    const br=BRANDS.find(x=>x.id===id); state.brand=br;
+    you("Order from "+br.name);
+    bot(b=>{
+      b.append(el("p",null,"Great — ordering from ",el("b",null,br.name),". What would you like to browse?"));
+      tiles(b,catsFor(),chooseCat);
+    });
+  }
+  const catsAgain=(text,delay=240)=>bot(bb=>{bb.append(el("p",null,text));tiles(bb,catsFor(),chooseCat);},delay);
+  function chooseCat(id){
+    const c=CATS.find(x=>x.id===id);
+    you(c.name);
+    bot(b=>{
+      b.append(el("p",null,"Here's the ",el("b",null,c.name.toLowerCase())," menu — tap ",el("b",null,"Add to cart")," on anything you like:"));
+      const list=el("div",{class:"items"});
+      ITEMS[id].forEach(it=>{
+        const ib=el("div",{class:"ib"},
+          el("div",{class:"line1"},el("span",{class:"nm"},it.name),el("span",{class:"pr"},money(it.price))),
+          el("div",{class:"ds"},it.desc));
+        actions(ib,[
+          {label:"Add to cart",kind:"primary",on:()=>addItem(it.id)},
+          {label:"View options",kind:"ghost",on:()=>viewOptions(it.id)},
+        ]);
+        list.append(el("div",{class:"item"},
+          IMG[it.id]?el("div",{class:"mimg"},el("img",{src:IMG[it.id],alt:it.name})):null, ib));
+      });
+      b.append(list);
+      chips(b,[
+        {label:"↩︎ Other categories",on:()=>catsAgain("Sure — pick a category:")},
+        {label:"🛒 View cart"+(count()?" ("+count()+")":""),on:showCart},
+      ]);
+    });
+  }
+  function viewOptions(id){
+    const it=ITEM[id]; you("View options — "+it.name);
+    const groups=(it.groups||[]).filter(g=>g.mods&&g.mods.length);
+    if(!groups.length){
+      bot(b=>{ b.append(el("p",null,el("b",null,it.name)," comes as is — no options to choose."));
+        actions(b,[{label:"Add to Cart",kind:"primary",on:()=>addItem(id)},{label:"↩︎ Back",kind:"ghost",on:()=>chooseCat(catOf(id))}]); },300);
+      return;
+    }
+    const g=groups[0], req=(g.name||"").toLowerCase().startsWith("choice of protein");
+    bot(b=>{
+      b.append(el("p",null,"Customize ",el("b",null,it.name),". ",el("b",null,g.name),req?" (pick one):":" (optional):"));
+      pick(b,g.mods.map(m=>({label:m.name+(m.price?" (+"+money(m.price)+")":""),on:()=>addItem(id,m.price,m.name)}))
+        .concat(req?[]:[{label:"No thanks",on:()=>addItem(id)}]));
+    },300);
+  }
+  /* Slack/Teams render chips inside the message body — chips(body,defs); WhatsApp renders a
+     self-removing quick-reply strip under the chat — chips(defs). Same call from our code. */
+  function pick(body,defs){ if(chips.length===1) chips(defs); else chips(body,defs); }
+  function catOf(id){ for(const c of CATS){ if((ITEMS[c.id]||[]).some(i=>i.id===id)) return c.id; } return CATS[0].id; }
+  function addItem(id,delta,size){
+    /* a chosen modifier becomes a derived cart item (name + price carry it), so cart, checkout and pre-orders need no changes */
+    if(size){ const base=ITEM[id]; const vid=id+"@"+size.toLowerCase().replace(/[^a-z0-9]+/g,"-");
+      if(!ITEM[vid]) ITEM[vid]=Object.assign({},base,{id:vid,base:id,name:base.name+" — "+size,price:+(base.price+(delta||0)).toFixed(2),groups:[]});
+      id=vid; size=null; }
+    const it=ITEM[id];
+    state.cart[id]=(state.cart[id]||0)+1;
+    you("Add "+it.name);
+    bot(b=>{
+      b.append(el("p",null,"Added ",el("b",null,it.name)," to your cart! ✅"));
+      actions(b,[
+        {label:"View cart",kind:"ghost",on:showCart},
+        {label:"Checkout",kind:"primary",on:checkout},
+        {label:"Add more",kind:"ghost",on:()=>catsAgain("What else?",220)},
+      ]);
+    },340);
+  }
+
+  function cartCardEl(){
+    const card=el("div",{class:"cartcard"});
+    Object.entries(state.cart).forEach(([id,q])=>{
+      const it=ITEM[id];
+      card.append(el("div",{class:"cartline"},
+        el("div",{class:"thumb",style:`background:linear-gradient(135deg,#243343,#2b3d4f)`},
+          IMG[id]?el("img",{src:IMG[id],alt:it.name}):it.emoji),
+        el("div",{class:"ci"},el("div",{class:"cn"},it.name),
+          el("div",{class:"cq"},
+            el("span",null,"Qty"),
+            el("div",{class:"qty"},
+              el("button",{type:"button","aria-label":"Decrease",onclick:()=>changeQty(id,-1)},"−"),
+              el("span",null,String(q)),
+              el("button",{type:"button","aria-label":"Increase",onclick:()=>changeQty(id,1)},"+")),
+            el("span",null,money(it.price*q)))),
+      ));
+    });
+    card.append(el("div",{class:"carttotal"},el("span",null,"🧾"),el("span",null,"Total: "+money(total()))));
+    return card;
+  }
+  function cartActions(b){
+    actions(b,[
+      {label:"Checkout",kind:"primary",on:checkout},
+      {label:"Add more items",kind:"ghost",on:()=>catsAgain("Go for it:",220)},
+      {label:"Clear cart",kind:"danger",on:clearCart},
+    ]);
+    actions(b,[{label:"💾 Save as pre-order",kind:"ghost",on:openModal}]);
+  }
+  function showCart(){
+    you("View cart");
+    if(!count()){ catsAgain("Your cart's empty. Pick a category and add something tasty:",520); return; }
+    bot(b=>{
+      b.append(el("p",null,"Here's what's in your cart:"));
+      const ul=el("ul",null); Object.entries(state.cart).forEach(([id,q])=>ul.append(el("li",null,el("b",null,ITEM[id].name)," ("+q+") — "+money(ITEM[id].price*q)))); b.append(ul);
+      b.append(el("p",null,"Your total is ",el("b",null,money(total())),". Add more items or proceed with your order?"));
+      b.append(el("p",null,el("b",null,"🛒 Your cart")));
+      b.append(cartCardEl());
+      cartActions(b);
+    },440);
+  }
+  function changeQty(id,d){
+    if(state.busy)return;
+    state.cart[id]=(state.cart[id]||0)+d; if(state.cart[id]<=0)delete state.cart[id];
+    if(!count()){ catsAgain("Cart cleared out — start again?",220); return; }
+    bot(b=>{ b.append(el("p",null,"Updated your cart:"));b.append(el("p",null,el("b",null,"🛒 Your cart")));b.append(cartCardEl()); cartActions(b); },220);
+  }
+  function clearCart(){ you("Clear cart"); state.cart={}; catsAgain("Done — your cart's empty. Start fresh whenever you like:",280); }
+  function checkout(){
+    if(!count()){ bot(b=>b.append(el("p",null,"Your cart's empty — add an item first."))); return; }
+    you("Checkout");
+    const n=count(), t=total(), where=state.brand?state.brand.name:LOCATIONS[state.locIdx];
+    state.cart={};
+    bot(b=>{ b.append(el("p",null,"✅ Order placed! Your ",el("b",null,n+" item"+(n>1?"s":"")),
+      " (",el("b",null,money(t)),") will be ready for pickup at ",el("b",null,where),", ",LOCATIONS[state.locIdx],"."));
+      chips(b,[{label:"🍽️ Start a new order",on:()=>catsAgain("What sounds good?",220)}]);
+    },420);
+    toast("Order placed · "+money(t));
+  }
+
+  // ---------- Pre-order modal ----------
+  function openModal(){
+    if(!count()){ bot(b=>b.append(el("p",null,"Add something to your cart before saving a pre-order."))); return; }
+    $("#poNameInput").value="";
+    $("#poHour").value=""; $("#poMin").value=""; $("#poRec").value="";
+    $("#overlay").classList.add("show"); setTimeout(()=>$("#poNameInput").focus(),30);
+  }
+  function closeModal(){ $("#overlay").classList.remove("show"); }
+  function createPreorder(){
+    const name=($("#poNameInput").value||"Morning order").trim();
+    const h=$("#poHour").value||"08", m=$("#poMin").value||"00", rec=$("#poRec").value||"Daily";
+    const items=Object.entries(state.cart).map(([id,q])=>({name:ITEM[id].name,qty:q,price:ITEM[id].price,emoji:ITEM[id].emoji}));
+    const t=total();
+    const po={ id:"po"+(state.poSeq++), name, hour:h, min:m, rec, items, total:t,
+      brand:state.brand?state.brand.name:"", location:LOCATIONS[state.locIdx], status:"active" };
+    state.preorders.unshift(po);
+    renderPreorders();
+    state.cart={};
+    closeModal();
+    bot(b=>{
+      b.append(el("p",null,"✅ ",el("b",null,"Pre-order created!")));
+      b.append(el("p",null,"🕐 ",el("b",null,name)," — "+h+":"+m+", "+REC_WORD[rec]));
+      b.append(el("p",null,"Manage it under ",el("b",null,"Pre-orders")," in the sidebar."));
+      chips(b,[{label:"🕐 Open pre-orders",on:()=>setTab("home")}]);
+    },420);
+    toast("Pre-order “"+name+"” created");
+    // simulate the scheduled time arriving
+    setTimeout(()=>firePreorderReady(po.id), reduced()?600:4200);
+  }
+  function firePreorderReady(poId){
+    const po=state.preorders.find(p=>p.id===poId);
+    if(!po||po.status!=="active")return;
+    bot(b=>{
+      b.append(el("p",null,"🔔 ",el("b",null,"Pre-order ready!")));
+      b.append(el("p",null,"Your pre-order ",el("b",null,po.name)," is ready!"));
+      b.append(el("p",null,el("b",null,"Location: "),po.location));
+      b.append(el("p",null,el("b",null,"Brand: "),po.brand||"—"));
+      b.append(el("p",null,el("b",null,"Items:")));
+      const ul=el("ul",null); po.items.forEach(it=>ul.append(el("li",null,it.qty+"× ",el("b",null,it.name)," • "+money(it.price*it.qty)))); b.append(ul);
+      actions(b,[
+        {label:"Confirm & checkout",kind:"primary",on:()=>confirmReady(po.id)},
+        {label:"Skip today",kind:"ghost",on:()=>skipReady(po.id)},
+        {label:"Pause pre-order",kind:"danger",on:()=>pauseReady(po.id)},
+      ]);
+    },500);
+  }
+  function confirmReady(poId){ const po=state.preorders.find(p=>p.id===poId); if(!po)return;
+    you("Confirm & checkout"); bot(b=>b.append(el("p",null,"✅ Confirmed! Your ",el("b",null,po.name)," order (",money(po.total),") is being prepared at ",el("b",null,po.brand||po.location),".")),360);
+    toast("Confirmed · "+po.name); }
+  function skipReady(poId){ const po=state.preorders.find(p=>p.id===poId); if(!po)return;
+    you("Skip today"); bot(b=>b.append(el("p",null,"👍 Skipped today's ",el("b",null,po.name),". It'll be back on your next scheduled time.")),320); }
+  function pauseReady(poId){ const po=state.preorders.find(p=>p.id===poId); if(!po)return;
+    po.status="paused"; renderPreorders(); you("Pause pre-order");
+    bot(b=>b.append(el("p",null,"⏸️ Paused ",el("b",null,po.name),". Resume anytime from ",el("b",null,"Pre-orders")," in the sidebar.")),320);
+    toast(po.name+" paused"); }
+
+  // ---------- Pre-orders: sidebar list + manager view ----------
+  function renderPreorders(){
+    const area=$("#poArea"), badge=$("#poBadge"), list=$("#poList"); area.innerHTML=""; list.innerHTML="";
+    if(!state.preorders.length){
+      area.append(el("p",{class:"empty-po"},"No pre-orders yet. Add items to your cart and tap “Save as pre-order” to create one."));
+      list.append(el("div",{class:"po-empty"},"No pre-orders yet"));
+      badge.hidden=true; return;
+    }
+    badge.hidden=false; badge.textContent=state.preorders.length;
+    state.preorders.forEach(po=>{
+      list.append(el("button",{class:"sb-it rc po-row",type:"button",onclick:()=>setTab("home")},
+        el("span",{class:"lbl"},(po.status==="paused"?"⏸ ":"🕐 ")+po.name,el("small",null,po.hour+":"+po.min))));
+    });
+    const wrap=el("div",{class:"po-list"});
+    state.preorders.forEach(po=>{
+      const items=el("ul",{class:"po-items"});
+      po.items.forEach(it=>items.append(el("li",null,el("span",null,(it.qty>1?it.qty+"× ":"")+it.name),el("span",null,money(it.price*it.qty)))));
+      const paused=po.status==="paused";
+      wrap.append(el("div",{class:"po"},
+        el("div",{class:"po-top"},
+          el("span",{class:"po-name"},po.name),
+          el("span",{class:"po-status "+(paused?"paused":"active")},paused?"Paused":"Active"),
+          el("span",{class:"po-sched"},"🕐 "+po.hour+":"+po.min+" — "+REC_WORD[po.rec])),
+        el("div",{class:"po-meta"},(po.brand?po.brand+" · ":"")+po.location),
+        items,
+        el("div",{class:"po-foot"},
+          el("span",{class:"po-total"},money(po.total)),
+          el("span",{class:"sp"}),
+          el("button",{class:"btn btn-ghost",type:"button",onclick:()=>togglePause(po.id)},paused?"Resume":"Pause"),
+          el("button",{class:"btn btn-danger",type:"button",onclick:()=>cancelPO(po.id)},"Cancel"))));
+    });
+    area.append(wrap);
+  }
+  function togglePause(id){ const po=state.preorders.find(p=>p.id===id); if(!po)return;
+    po.status=po.status==="paused"?"active":"paused"; renderPreorders(); toast(po.name+(po.status==="paused"?" paused":" resumed")); }
+  function cancelPO(id){ const po=state.preorders.find(p=>p.id===id);
+    state.preorders=state.preorders.filter(p=>p.id!==id); renderPreorders(); toast((po?po.name:"Pre-order")+" canceled"); }
+
+  // ---------- free text ----------
+  function handleText(raw){
+    const t=raw.trim(); if(!t)return; you(t); const q=t.toLowerCase();
+    if(/\b(menu|order|start|hi|hello|hey|brand|browse)\b/.test(q)){
+      bot(b=>{b.append(el("p",null,"Let's get started — pick a spot:"));tiles(b,BRANDS,chooseBrand);});
+    } else if(/\bcart\b/.test(q)){ showCart(); }
+    else if(/\b(checkout|pay|done)\b/.test(q)){ checkout(); }
+    else if(/\b(help|how)\b/.test(q)){ bot(b=>{b.append(el("p",null,"I can help you order. Pick a brand, choose a category, add items, then ",el("b",null,"Checkout")," or ",el("b",null,"Save as pre-order"),"."));tiles(b,BRANDS,chooseBrand);}); }
+    else { const hit=Object.values(ITEM).filter(i=>!i.base).sort((a,b)=>b.name.length-a.name.length).find(i=>q.includes(i.name.toLowerCase())||q.includes(i.name.toLowerCase().split(/[ ,:]/).slice(0,2).join(" "))); if(hit){addItem(hit.id);} else bot(b=>{b.append(el("p",null,"Not sure about that — want to see the menu?"));tiles(b,BRANDS,chooseBrand);}); }
+  }
+
+  // ---------- views / navigation ----------
+  function selectNav(which){ // which: "new" | "chat" | "home"
+    document.querySelectorAll(".sb-it").forEach(b=>b.classList.remove("sel"));
+    if(which==="new") $("#newChat").classList.add("sel");
+    else if(which==="chat") $("#agentChat").classList.add("sel");
+  }
+  function setTab(name){ state.tab=name;
+    document.querySelectorAll(".view").forEach(p=>p.classList.toggle("active",p.dataset.panel===name));
+    if(name==="messages"){ clearUnread(); selectNav(state.started?"chat":"new"); down(); $("#cinput").focus(); }
+    else { document.querySelectorAll(".sb-it").forEach(b=>b.classList.remove("sel")); document.querySelectorAll(".po-row").forEach(b=>b.classList.add("sel")); }
+  }
+  function newChat(){ // ChatGPT "New chat": fresh conversation, cart reset, saved pre-orders kept
+    state.started=false; state.cart={}; state.brand=null; chat.innerHTML=""; main.classList.remove("chatting");
+    $("#cinput").value=""; $("#composer").classList.remove("has-text"); setTab("messages");
+  }
+  $("#newChat").addEventListener("click",newChat);
+  $("#agentChat").addEventListener("click",()=>{ setTab("messages"); if(!state.started) greet(); });
+  $("#startOrder").addEventListener("click",()=>{ if(!state.busy) greet(); });
+  $("#sbToggle").addEventListener("click",()=>document.querySelector(".window").classList.add("collapsed"));
+  $("#sbOpen").addEventListener("click",()=>document.querySelector(".window").classList.remove("collapsed"));
+  document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll(".seg button").forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-selected",String(x===b));});}));
+  $("#changeLoc").addEventListener("click",()=>{ state.locIdx=(state.locIdx+1)%LOCATIONS.length;
+    $("#locName").textContent=LOCATIONS[state.locIdx]; toast("Location set to "+LOCATIONS[state.locIdx]); });
+  $("#cinput").addEventListener("input",e=>$("#composer").classList.toggle("has-text",!!e.target.value.trim()));
+  $("#composer").addEventListener("submit",e=>{e.preventDefault();const v=$("#cinput").value;$("#cinput").value="";$("#composer").classList.remove("has-text");handleText(v);});
+  $("#modalX").addEventListener("click",closeModal);
+  $("#modalCancel").addEventListener("click",closeModal);
+  $("#modalCreate").addEventListener("click",createPreorder);
+  $("#overlay").addEventListener("click",e=>{if(e.target===$("#overlay"))closeModal();});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#overlay").classList.contains("show"))closeModal();});
+
+  // populate modal selects
+  (function fillSelects(){
+    const h=$("#poHour"), m=$("#poMin");
+    for(let i=0;i<24;i++){const v=String(i).padStart(2,"0");h.append(el("option",{value:v},v));}
+    for(let i=0;i<60;i+=5){const v=String(i).padStart(2,"0");m.append(el("option",{value:v},v));}
+  })();
+
+  let toastT;
+  function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1900); }
+
+  // ---------- boot: ChatGPT opens on the empty state; the conversation starts on first input ----------
+  renderPreorders();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+/* Thrive Order Agent: shell styles (Centric OS chrome).
+   Header, stage, and footer only. The Teams window lives in the iframe. */
+:root{
+  /* Centric OS / Compass Digital palette */
+  --cd-black:#050E1F; --cd-blue:#003396; --cd-cerulean:#0C76D8; --cd-cyan:#13D6E5;
+  --cd-lite-cyan:#10F8F9; --cd-cerulean-neutral:#E3F5FC; --cd-lime:#CBFF2E;
+  --n1:#313C4F; --n2:#5D6A7E; --n3:#9EAEC5; --n4:#D6E2F8;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+
+  /* semantic tokens: dark theme (default) */
+  --bg:var(--cd-black); --text-strong:#FFFFFF; --text:var(--n4); --text-muted:var(--n3);
+  --text-faint:var(--n2); --border:rgba(158,174,197,.16); --border-strong:rgba(158,174,197,.30);
+  --hover-bg:rgba(214,226,248,.05); --accent:var(--cd-lime); --accent-glow:rgba(203,255,46,.35);
+  --glow-a:rgba(12,118,216,.22); --glow-b:rgba(19,214,229,.10);
+  --mark-a:#FFFFFF; --mark-b:var(--cd-cerulean); --mark-c:var(--cd-lite-cyan);
+}
+:root[data-theme="light"]{
+  --bg:#FFFFFF; --text-strong:var(--cd-black); --text:var(--n1); --text-muted:var(--n2);
+  --text-faint:var(--n3); --border:rgba(5,14,31,.10); --border-strong:rgba(5,14,31,.20);
+  --hover-bg:rgba(12,118,216,.06); --accent:var(--cd-cerulean); --accent-glow:rgba(12,118,216,.30);
+  --glow-a:rgba(19,214,229,.14); --glow-b:rgba(227,245,252,.9);
+  --mark-a:var(--cd-cerulean); --mark-b:var(--cd-blue); --mark-c:var(--cd-cyan);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text); font-family:var(--font);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; overflow:hidden;
+  transition:background-color .25s,color .25s;
+}
+
+/* Header */
+header{
+  flex:0 0 auto; display:flex; align-items:center; gap:16px;
+  padding:14px 24px; border-bottom:1px solid var(--border);
+  background:
+    radial-gradient(900px 220px at 12% -60%, var(--glow-a), transparent 65%),
+    radial-gradient(700px 200px at 88% -70%, var(--glow-b), transparent 60%),
+    var(--bg);
+  position:relative; z-index:2; transition:background-color .25s,border-color .25s;
+}
+.brand{display:flex; align-items:center; gap:12px; min-width:0}
+.mark{width:27px; height:36px; flex:0 0 auto}
+.mark .m-a{fill:var(--mark-a)}
+.mark .m-b{fill:var(--mark-b)}
+.mark .m-c{fill:var(--mark-c)}
+.wordmark{display:flex; flex-direction:column; line-height:1.15; min-width:0}
+.wordmark .name{font-weight:600; font-size:18px; color:var(--text-strong); letter-spacing:.005em; white-space:nowrap}
+.wordmark .sub{font-size:9.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--text-strong); opacity:.92; white-space:nowrap; margin-bottom:1px}
+.divider{width:1px; height:30px; background:var(--border-strong); flex:0 0 auto}
+.context{display:flex; flex-direction:column; line-height:1.2; min-width:0}
+.context .title{font-weight:700; font-size:14.5px; color:var(--text-strong); white-space:nowrap}
+.context .desc{font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tagline{margin-left:auto; font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--text-muted); white-space:nowrap}
+.tagline b{color:var(--accent); font-weight:600}
+:root[data-theme="light"] .tagline b{color:var(--cd-cerulean)}
+
+/* Theme toggle */
+.theme-btn{
+  appearance:none; cursor:pointer; flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:50%; background:none; border:1px solid var(--border-strong); color:var(--text-muted);
+  transition:color .2s,border-color .2s,background-color .2s;
+}
+.theme-btn:hover{color:var(--text-strong); background:var(--hover-bg)}
+.theme-btn:focus-visible{outline:2px solid var(--cd-cyan); outline-offset:2px}
+.theme-btn svg{width:17px; height:17px}
+.theme-btn .sun{display:none}
+.theme-btn .moon{display:block}
+:root[data-theme="light"] .theme-btn .sun{display:block}
+:root[data-theme="light"] .theme-btn .moon{display:none}
+@media (max-width:860px){ .tagline{display:none} .context .desc{display:none} }
+
+/* Stage: holds the Teams window */
+.stage{flex:1 1 auto; min-height:0; position:relative; background:var(--bg); transition:background-color .25s}
+.app{width:100%; height:100%; border:0; display:block; background:transparent}
+.loading{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--text-faint); font-size:13px; font-weight:500; letter-spacing:.06em; text-transform:uppercase;
+  pointer-events:none; transition:opacity .3s;
+}
+.stage.loaded .loading{opacity:0}
+
+/* Footer */
+footer{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:8px 24px;
+  border-top:1px solid var(--border); font-size:11px; color:var(--text-faint); background:var(--bg);
+  transition:background-color .25s,border-color .25s;
+}
+footer .dot{width:5px; height:5px; border-radius:50%; background:var(--accent)}
+footer .right{margin-left:auto; letter-spacing:.04em}
+
+/* Small screens: keep the brand and the theme toggle; drop secondary labels */
+@media (max-width:560px){ .divider, .context{display:none} footer .right{display:none} }
+
+/* 404 page */
+.notfound{display:flex; align-items:center; justify-content:center; text-align:center; height:100%}
