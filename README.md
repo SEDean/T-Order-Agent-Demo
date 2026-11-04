@@ -52,10 +52,11 @@ The output is about 7.8 MB and inlines every stylesheet, script, image, and font
 
 - **Content Security Policy** on every page (set as a `<meta>` tag, since GitHub Pages cannot send HTTP headers). Scripts and styles come from the same origin only. There are no inline scripts, `connect-src` is `'none'`, `object-src` is `'none'`, `form-action` is `'none'`, and `base-uri` is locked.
 - **Inline styles are allowed only in the Teams frame**, where per-chat avatar colours are set. Nothing else uses them.
-- **Iframe sandbox:** `allow-scripts allow-same-origin allow-forms`. The frame cannot open popups or navigate the top window. Forms are handled in script and blocked from submitting by CSP.
+- **Iframe sandbox:** `allow-scripts allow-same-origin allow-forms`. Because the frame is first-party code on the same origin, this is defense in depth, not an isolation boundary. Forms are handled in script and blocked from submitting by CSP.
 - **No cross-window messaging.** Theme sync uses `localStorage` and the browser's `storage` event, so there is no `postMessage` surface.
 - **No external requests, cookies, or analytics.** Fonts and images are self-hosted.
 - **No HTML injection path.** Dynamic text is written with `textContent` or text nodes. The two remaining `innerHTML` writes use a constant or clear an element.
+- **Search engines.** Every page carries `noindex, nofollow, noarchive`, and `robots.txt` disallows all crawling. GitHub Pages cannot send an `X-Robots-Tag` header, so this relies on crawlers honouring the tags, which the major ones do.
 - **Hosting limits.** GitHub Pages cannot set `frame-ancestors`, `X-Frame-Options`, or HSTS headers, so those cannot be configured here. If you need to restrict embedding, put the site behind a proxy that sets them.
 
 ## Testing
