@@ -1,5 +1,6 @@
 /* Thrive ordering agent, Microsoft Teams window styles.
-   Moved out of the original inline <style>; no rules changed. */
+   Moved out of the original inline <style>. One change: the chat-list column stays
+   visible down to 720px (narrowed), instead of hiding below 1020px. */
 :root{
     --bg:#1f1f1f; --panel:#292929; --panel-2:#333333; --panel-3:#3d3d3d;
     --border:#3d3d3d; --border-strong:#4a4a4a;
@@ -265,7 +266,8 @@
   .chat-it.unread .cname{color:var(--strong);font-weight:700}
   .chat-it.unread .cprev span{color:var(--text)}
 
-  @media (max-width:1020px){ .clist{display:none} }
+  @media (max-width:1020px){ .clist{width:260px} }
+  @media (max-width:720px){ .clist{display:none} }
   @media (max-width:720px){ .rail,.titlebar{display:none} .chatpane{border-left:0} }
 
   @media (max-width:560px){
