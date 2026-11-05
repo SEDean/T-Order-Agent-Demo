@@ -10,10 +10,12 @@
 <link rel="stylesheet" href="../assets/css/fonts.css" />
 <script src="../assets/js/theme.js"></script>
 <link rel="stylesheet" href="ordering.css" />
+<link rel="stylesheet" href="calendar.css" />
+<link rel="stylesheet" href="nav.css" />
 <link rel="stylesheet" href="cues.css" />
 </head>
 <body>
-<main class="window" role="application" aria-label="Thrive app in Microsoft Teams">
+<main class="window" data-view="calendar" role="application" aria-label="Thrive app in Microsoft Teams">
 
   <!-- Teams titlebar -->
   <div class="titlebar">
@@ -32,13 +34,14 @@
     <!-- App rail -->
     <nav class="rail" aria-label="App bar">
       <button class="rit" title="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="rbadge">14</span></button>
-      <button class="rit on" title="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 00-7.7 13.7L3 21l4.5-1.2A9 9 0 1012 3z"/></svg><span class="rbadge">2</span></button>
+      <button class="rit" title="Chat" data-go="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 00-7.7 13.7L3 21l4.5-1.2A9 9 0 1012 3z"/></svg><span class="rbadge">2</span></button>
       <button class="rit" title="Teams"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0"/><circle cx="17" cy="9.5" r="2.3"/><path d="M15.6 14.6a4.6 4.6 0 015 4.4"/></svg><span class="rbadge">1</span></button>
+      <button class="rit on" title="Calendar" data-go="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4M8 13h2M12 13h2M16 13h.5M8 16.5h2M12 16.5h2"/></svg></button>
       <button class="rit" title="Calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l1.5 4.5-2.3 1.7a12 12 0 005.6 5.6l1.7-2.3L20 15v4a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 4z"/></svg></button>
       <button class="rit" title="OneDrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 18h11a4 4 0 100-8 6 6 0 00-11.3-1.5A4.5 4.5 0 007 18z"/></svg></button>
       <button class="rit" title="Copilot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/><path d="M18.5 15.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></svg></button>
       <button class="rit" title="Notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></button>
-      <button class="rit" title="More apps"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+      <button class="rit" title="More apps" data-apps aria-haspopup="dialog" aria-expanded="false" aria-controls="apps"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
       <button class="rit" title="Add apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg></button>
       <span class="rsp"></span>
       <button class="rit" title="People"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0113 0"/></svg></button>
@@ -102,9 +105,13 @@
       </div>
     </aside>
 
+    <!-- Calendar (landing view), rendered by calendar.js -->
+    <section class="calview" id="calview" aria-label="Calendar"></section>
+
     <section class="chatpane">
 
   <div class="topbar">
+    <button class="btn-ic back" data-go="calendar" title="Back" aria-label="Back to calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
     <span class="appicon" aria-hidden="true"><img class="avimg" src="../assets/brand/thrive.png" alt=""><span class="presence"></span></span>
     <span class="apptitle">Thrive</span>
     <div class="right">
@@ -195,10 +202,34 @@
   </div>
     </section><!-- /chatpane -->
   </div><!-- /shell -->
+
+  <!-- Mobile bottom nav (calendar view, 720px and narrower) -->
+  <nav class="mnav" aria-label="Teams">
+    <button type="button" title="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="rbadge">6</span>Activity</button>
+    <button type="button" title="Chat" data-go="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 00-7.7 13.7L3 21l4.5-1.2A9 9 0 1012 3z"/></svg><span class="rbadge">1</span>Chat</button>
+    <button type="button" title="Calendar" data-go="calendar" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4M8 13h2M12 13h2M16 13h.5M8 16.5h2M12 16.5h2"/></svg>Calendar</button>
+    <button type="button" title="Calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l1.5 4.5-2.3 1.7a12 12 0 005.6 5.6l1.7-2.3L20 15v4a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 4z"/></svg>Calls</button>
+    <button type="button" title="Files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 3.5h7l4.5 4.5v12.5H7z"/><path d="M14 3.5V8h4.5"/></svg>Files</button>
+    <button type="button" title="More" data-apps aria-haspopup="dialog" aria-expanded="false" aria-controls="apps"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</button>
+  </nav>
+
+  <!-- More apps: flyout on desktop, bottom sheet on mobile (nav.js) -->
+  <div class="apps" id="apps" role="dialog" aria-label="Apps" hidden>
+    <div class="apps-card">
+      <span class="apps-grab" aria-hidden="true"></span>
+      <div class="apps-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Find an app</div>
+      <div class="apps-list" id="appsList">
+        <button type="button" class="app-row" id="appThrive"><span class="app-ic"><img src="../assets/brand/thrive.png" alt=""></span>Thrive</button>
+      </div>
+      <div class="apps-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>Get more apps</div>
+    </div>
+  </div>
 </main>
 
 <script src="menu.js"></script>
 <script src="ordering.js"></script>
+<script src="calendar.js"></script>
+<script src="nav.js"></script>
 <script src="cues.js"></script>
 </body>
 </html>

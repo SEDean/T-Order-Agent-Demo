@@ -1,0 +1,118 @@
+/* Teams Calendar (calendar.js). Desktop Day view above 720px, mobile Agenda view at 720px and below.
+   View switching: .window[data-view] shows the calendar or the chat (chat list + Thrive pane). */
+:root{
+  --cal-bg:#292929; --cal-line:#3a3a3a; --cal-half:#323232;
+  --ev-bg:#05303d; --ev-bar:#0e7a8f; --ev-text:#e8f4f7; --ev-sub:#b5ccd2;
+  --now:#7f85f5; --hatch:#5f6170;
+}
+html[data-theme="light"]{
+  --cal-bg:#ffffff; --cal-line:#e3e3e3; --cal-half:#f0f0f0;
+  --ev-bg:#d6eef3; --ev-bar:#0e7a8f; --ev-text:#0b2f38; --ev-sub:#3c5c63;
+  --now:#5b5fc7; --hatch:#b9bbcc;
+}
+
+.window[data-view="calendar"] .clist,
+.window[data-view="calendar"] .chatpane,
+.window[data-view="chat"] .calview{display:none}
+.calview{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;background:var(--bg);border-left:1px solid var(--border)}
+.calview svg{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.calview button{appearance:none;font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ---------- desktop Day view ---------- */
+.cal-d{flex:1;display:flex;flex-direction:column;min-height:0}
+.cal-m{display:none}
+.cal-bar{display:flex;align-items:center;gap:4px;padding:10px 14px;flex:0 0 auto}
+.cb-ic,.cb-btn{display:inline-flex;align-items:center;gap:6px;height:32px;border-radius:4px;color:var(--text)}
+.cb-ic{width:32px;justify-content:center}
+.cb-btn{padding:0 8px;font-size:14px;font-weight:600}
+.cb-ic:hover,.cb-btn:hover{background:var(--panel-2)}
+.cb-ic svg,.cb-btn svg{width:18px;height:18px}
+.cb-ic .dots{stroke-width:3.2}
+.cb-btn .cb-chev{width:12px;height:12px;color:var(--muted)}
+.cb-date{font-size:15px;margin-left:6px}
+.cb-sep{width:1px;height:20px;background:var(--border);margin:0 6px}
+.cb-fill{flex:1}
+.cb-new{display:inline-flex;margin-left:6px;border-radius:4px;overflow:hidden;background:var(--brand-btn)}
+.cb-new button{display:inline-flex;align-items:center;gap:6px;height:32px;color:#fff;font-size:14px;font-weight:600}
+.cb-new-main{padding:0 14px 0 12px}
+.cb-new-drop{padding:0 8px;border-left:1px solid rgba(255,255,255,.25)!important}
+.cb-new button:hover{background:var(--brand-hi)}
+.cb-new svg{width:17px;height:17px}
+.cb-new-drop svg{width:12px;height:12px}
+
+.ch-gutter{width:64px;flex:0 0 auto}
+.cal-head{display:flex;flex:0 0 auto;background:var(--cal-bg)}
+.cal-head .ch-gutter{display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.ch-tz{font-size:11.5px;color:var(--muted)}
+.ch-day{flex:1;border-top:3px solid var(--now);padding:6px 14px 6px;display:flex;flex-direction:column;line-height:1.15}
+.ch-day b{font-size:22px;font-weight:600;color:var(--now)}
+.ch-day span{font-size:12.5px;color:var(--now)}
+.cal-allday{display:flex;flex:0 0 auto;background:var(--cal-bg);border-bottom:1px solid var(--cal-line);padding-bottom:3px}
+.ad-band{flex:1;display:flex;align-items:center;gap:10px;margin:0 6px 0 2px;height:24px;padding:0 8px;border-left:3px solid var(--ev-bar);
+  background:var(--ev-bg);color:var(--ev-text);font-size:12px;border-radius:2px;min-width:0}
+.ad-text{flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ev-sub)}
+.ad-text b{color:var(--ev-text);font-weight:600}
+.ad-edge{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.ad-edge svg{width:11px;height:11px}
+
+.cal-grid{flex:1;min-height:0;overflow-y:auto;background:var(--cal-bg)}
+.cal-grid::-webkit-scrollbar{width:8px}
+.cal-grid::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px}
+.cg-body{display:flex;position:relative}
+.cg-gutter{width:64px;flex:0 0 auto;position:relative;border-right:1px solid var(--cal-line)}
+.cg-gutter span{position:absolute;right:10px;transform:translateY(-50%);font-size:12px;color:var(--muted);white-space:nowrap}
+/* hour lines (solid) and half-hour lines (lighter), 96px per hour to match calendar.js */
+.cg-lanes{flex:1;position:relative;
+  background:repeating-linear-gradient(to bottom,var(--cal-line) 0 1px,transparent 1px 48px,var(--cal-half) 48px 49px,transparent 49px 96px)}
+.cg-ev{position:absolute;display:flex;flex-direction:column;gap:1px;padding:6px 26px 6px 10px;overflow:hidden;
+  background:var(--ev-bg);border-left:4px solid var(--ev-bar);border-radius:3px;color:var(--ev-text);font-size:13px;line-height:1.3}
+.cg-ev.short{flex-direction:row;align-items:center;padding-top:0;padding-bottom:0}
+.cg-ev.tent{border-left-color:transparent;
+  border-image:repeating-linear-gradient(135deg,var(--ev-bar) 0 3px,var(--hatch) 3px 6px) 1}
+.ev-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ev-sub)}
+.ev-t b{color:var(--ev-text);font-weight:600}
+.ev-s{color:var(--ev-sub);font-size:12.5px}
+.ev-r{position:absolute;right:8px;bottom:6px;width:15px;height:15px;color:var(--ev-sub)}
+.cg-ev.short .ev-r{top:50%;bottom:auto;transform:translateY(-50%)}
+.cg-now{position:absolute;left:0;right:0;height:2px;background:var(--now);z-index:2;pointer-events:none}
+.cg-now::before{content:"";position:absolute;left:-6px;top:-5px;width:12px;height:12px;border-radius:50%;background:var(--now)}
+
+/* ---------- mobile Agenda view ---------- */
+@media (max-width:720px){
+  .calview{border-left:0;position:relative}
+  .cal-d{display:none}
+  .cal-m{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+  .m-head{display:flex;align-items:center;gap:12px;padding:12px 14px 8px}
+  .m-ava{width:34px;height:34px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+    background:linear-gradient(135deg,#6b8f5a,#3c6446);color:#fff;font-size:12px;font-weight:700}
+  .m-head h2{flex:1;margin:0;font-size:24px;font-weight:700;color:var(--strong)}
+  .m-ic{display:grid;place-items:center;width:36px;height:36px;color:var(--strong)}
+  .m-ic svg{width:23px;height:23px}
+  .m-pills{display:flex;gap:8px;padding:2px 14px 12px}
+  .m-pill{padding:6px 16px;border-radius:999px;border:1px solid var(--border-strong)!important;font-size:15px;font-weight:600;color:var(--strong)!important}
+  .m-pill.on{background:#33344a;border-color:#444791!important;color:#a6a7f1!important}
+  .mw-week{display:grid;grid-template-columns:repeat(7,1fr);padding:0 6px 10px;text-align:center}
+  .mw-d{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .mw-l{font-size:13px;color:var(--muted)}
+  .mw-m{font-size:12px;color:var(--strong);height:16px;align-self:stretch;text-align:left;padding-left:8px}
+  .mw-d b{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;font-size:17px;font-weight:500;color:var(--strong)}
+  .mw-d.on b{background:var(--now);color:#fff;font-weight:600}
+  .m-grab{height:18px;flex:0 0 auto;background:var(--panel);position:relative}
+  .m-grab::after{content:"";position:absolute;left:50%;top:7px;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:var(--border-strong)}
+  .ag-list{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 90px}
+  .ag-day h3{display:flex;align-items:baseline;gap:12px;margin:18px 0 10px;font-size:19px;font-weight:700;color:var(--strong)}
+  .ag-day h3 span{font-size:14px;font-weight:400;color:var(--muted)}
+  .ag-row{display:flex;gap:12px;padding:8px 0 14px;align-items:flex-start}
+  .ag-time{width:72px;flex:0 0 auto;display:flex;flex-direction:column;font-size:13.5px;color:var(--text);line-height:1.5}
+  .ag-time small{font-size:13px;color:var(--muted)}
+  .ag-bar{width:4px;align-self:stretch;min-height:28px;border-radius:3px;background:var(--now);flex:0 0 auto}
+  .ag-bar.tent{background:repeating-linear-gradient(135deg,var(--now) 0 3px,var(--hatch) 3px 6px)}
+  .ag-main{min-width:0}
+  .ag-title{font-size:16px;color:var(--strong);line-height:1.3}
+  .ag-r{display:inline-block;width:16px;height:16px;margin-left:8px;vertical-align:-2px;color:var(--text)}
+  .ag-sub{font-size:13.5px;color:var(--muted);margin-top:3px}
+  .m-fab{position:absolute;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+    background:var(--brand-btn)!important;color:#fff!important;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+  .m-fab svg{width:26px;height:26px;stroke-width:2}
+}
+html[data-theme="light"] .m-pill.on{background:#e8ebfa;border-color:#c5c7f0!important;color:#4f52b2!important}

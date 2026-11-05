@@ -1,0 +1,56 @@
+/* Teams navigation (nav.js): More apps panel, mobile bottom nav, mobile back arrow. */
+
+/* More apps. Desktop: a flyout beside the rail; the transparent layer catches outside clicks. */
+.apps{position:absolute;inset:0;z-index:50}
+.apps[hidden]{display:none}
+.apps-card{position:absolute;width:300px;display:flex;flex-direction:column;gap:6px;padding:12px 8px 8px;
+  background:var(--panel);border:1px solid var(--border-strong);border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.45);
+  animation:apps-in .14s ease-out}
+.apps-grab{display:none}
+.apps-search{display:flex;align-items:center;gap:8px;height:32px;margin:0 4px 4px;padding:0 10px;border-radius:4px;
+  background:var(--bg);border:1px solid var(--border);border-bottom-color:var(--brand);color:var(--faint);font-size:13px}
+.apps-search svg,.apps-more svg{width:15px;height:15px;flex:0 0 auto}
+.apps-list{display:flex;flex-direction:column}
+.app-row{appearance:none;display:flex;align-items:center;gap:12px;padding:7px 8px;border:0;border-radius:4px;background:none;
+  color:var(--text);font:600 13.5px/1.2 var(--font);text-align:left;cursor:pointer}
+.app-row:not(:disabled):hover,.app-row:focus-visible{background:var(--panel-2);color:var(--strong);outline:0}
+.app-row:disabled{cursor:default}
+.app-ic{width:28px;height:28px;border-radius:6px;overflow:hidden;display:grid;place-items:center;flex:0 0 auto;background:#242b24}
+.app-ic img{width:100%;height:100%;object-fit:cover}
+.app-ic svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.apps-more{display:flex;align-items:center;gap:10px;margin-top:2px;padding:9px 12px 4px;border-top:1px solid var(--border);
+  color:var(--link);font-size:13px;font-weight:600}
+@keyframes apps-in{from{opacity:0;transform:translateX(-4px)}}
+
+.rit[aria-expanded="true"]{color:var(--strong);background:var(--panel-2)}
+
+/* Mobile bottom nav and back arrow: hidden on desktop */
+.mnav,.topbar .back{display:none}
+
+@media (max-width:720px){
+  /* Bottom nav shows on the calendar only; the Thrive chat gets a back arrow instead. */
+  .window[data-view="calendar"] .mnav{display:flex}
+  .window[data-view="chat"] .topbar .back{display:inline-flex;margin:0 -6px 0 -8px}
+  .mnav{flex:0 0 auto;justify-content:space-around;padding:6px 4px 10px;background:var(--bg);border-top:1px solid var(--border)}
+  .mnav button{appearance:none;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;
+    border:0;background:none;color:var(--muted);font:500 11.5px/1 var(--font);cursor:pointer;padding:4px 0}
+  .mnav button.on{color:var(--brand)}
+  .mnav svg{width:24px;height:24px}
+  .mnav .rbadge{top:-2px;right:6px;border-color:var(--bg)}
+
+  /* More apps becomes a bottom sheet with a grid of apps */
+  .apps{position:fixed;background:rgba(0,0,0,.5);animation:apps-fade .16s ease-out}
+  .apps-card{left:0!important;right:0;top:auto!important;bottom:0;width:auto;padding:8px 14px 22px;gap:10px;
+    border-radius:14px 14px 0 0;border-width:1px 0 0;animation:apps-up .2s ease-out}
+  .apps-grab{display:block;width:40px;height:4px;margin:0 auto 6px;border-radius:4px;background:var(--border-strong)}
+  .apps-search{margin:0}
+  .apps-list{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 4px;padding:6px 0 2px}
+  .app-row{flex-direction:column;gap:7px;padding:8px 2px;font-size:12px;font-weight:500;text-align:center}
+  .app-ic{width:48px;height:48px;border-radius:12px}
+  .app-ic svg{width:26px;height:26px}
+  .apps-more{justify-content:center}
+}
+@keyframes apps-fade{from{opacity:0}}
+@keyframes apps-up{from{transform:translateY(24px);opacity:.6}}
+html[data-theme="light"] .apps-card{box-shadow:0 12px 32px rgba(0,0,0,.16)}
+@media (max-width:720px){ html[data-theme="light"] .apps{background:rgba(0,0,0,.3)} }

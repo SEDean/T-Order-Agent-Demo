@@ -1,7 +1,7 @@
 /**
  * App cues: a guided overlay that rings the next control in the ordering flow
- * (Chat tab → pick a spot → choose a category → add an item → check out) with a
- * short tip. Turned on and off from the shell header ("Cues on/off") or the tip's ×.
+ * (More apps → Thrive → Chat tab → pick a spot → choose a category → add an item →
+ * check out) with a short tip. Turned on and off from the shell header ("Cues on/off") or the tip's ×.
  *
  * How it works
  * - Runs inside the Teams frame, so it works however the site is opened (http(s),
@@ -13,7 +13,7 @@
  * - A cue appears only once its target has held still for a few frames, so it never
  *   chases a bubble that is still animating in.
  * - Nodes are built with createElement/textContent; positions are set through CSSOM.
- * - Reads the ordering UI's DOM only; ordering.js is unchanged.
+ * - Reads the Teams UI's DOM only; ordering.js and nav.js know nothing about cues.
  */
 "use strict";
 (function () {
@@ -66,6 +66,12 @@
 
   /** Returns { el, text } to ring, { jump, text } when the target is scrolled away, or null. */
   function nextStep() {
+    /* Calendar landing: More apps (rail on desktop, bottom nav on mobile) → Thrive */
+    if (document.querySelector(".window").dataset.view === "calendar") {
+      if (!$("apps").hidden) return { el: $("appThrive"), text: verb() + " Thrive to open it" };
+      const more = [...document.querySelectorAll("[data-apps]")].find(shown);
+      return more && { el: more, text: narrow.matches ? "Tap More to find Thrive" : "Click More apps to find Thrive" };
+    }
     if ($("overlay").classList.contains("show")) return { el: $("modalCreate"), text: "Create your pre-order" };
     const tab = document.querySelector('.tab[data-tab="messages"]');
     if (tab.getAttribute("aria-selected") !== "true") return { el: tab, text: verb() + " Chat to start ordering" };
@@ -148,7 +154,7 @@
   /* ---------- wiring ---------- */
   /* Ignore the overlay's own changes, or it would keep itself awake. */
   new MutationObserver((recs) => { if (recs.some((m) => !layer.contains(m.target))) kick(); }).observe(document.body, {
-    subtree: true, childList: true, attributes: true, attributeFilter: ["class", "aria-selected"],
+    subtree: true, childList: true, attributes: true, attributeFilter: ["class", "aria-selected", "hidden", "data-view"],
   });
   document.addEventListener("scroll", kick, true);
   document.addEventListener("load", kick, true);            // images settling the layout

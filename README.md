@@ -8,7 +8,9 @@ The Thrive ordering agent for Eurest Cafe, running in a Microsoft Teams-style wi
 index.html               Centric OS shell (header + view controls, Teams stage, footer)
 404.html                 Not-found page
 teams/
-  ordering.html          Teams window (the ordering agent), loaded by index.html
+  ordering.html          Teams window, loaded by index.html (opens on Calendar)
+  calendar.js / .css     Teams Calendar landing view: desktop Day view, mobile Agenda view
+  nav.js / nav.css       Calendar ⇄ Thrive chat, More apps flyout / bottom sheet, mobile nav
   ordering.js            Conversation, cart, and pre-order logic
   ordering.css           Teams window styles
   menu.js                Eurest Cafe menu data, photo and brand-tile paths
@@ -30,8 +32,10 @@ The header carries three controls next to the Centric OS brand:
 | Control | What it does |
 |---|---|
 | **Desktop / Mobile** | Desktop fills the stage with the full Teams window. Mobile shows the same frame inside a 390 × 844 phone, where the frame's responsive CSS collapses to the single-column Teams layout. Hidden on real phones (560 px and narrower), which always get the full-bleed mobile layout. |
-| **Cues on / off** | Rings the next control in the ordering flow with a short tip: Chat tab → pick a spot → choose a category → add an item (or pick an option) → check out → start a new order. The pre-order modal and "Confirm & Checkout" are covered too. If the target is scrolled out of view, the tip offers **Show me ↓**. The tip's × turns cues off. |
+| **Cues on / off** | Rings the next control in the ordering flow with a short tip: More apps → Thrive → Chat tab → pick a spot → choose a category → add an item (or pick an option) → check out → start a new order. The pre-order modal and "Confirm & Checkout" are covered too. If the target is scrolled out of view, the tip offers **Show me ↓**. The tip's × turns cues off. |
 | **Theme** | Light or dark, shared with the Teams frame. |
+
+The Teams window opens on **Calendar**, as Teams does. Desktop shows the Day view; mobile shows the Agenda view with the bottom nav. To reach Thrive, open **More apps** (the rail's "…" on desktop, **More** in the bottom nav on mobile) and pick **Thrive**, which opens the Thrive chat. The rail's Calendar icon (desktop) or the back arrow (mobile) returns to the calendar, and the order in progress is kept. The calendar always shows the viewer's today, and its meetings are generic sample content placed around the current hour.
 
 Defaults are **Mobile** and **Cues on**. Choices are saved per browser in `localStorage`.
 
