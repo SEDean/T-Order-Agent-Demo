@@ -1,0 +1,31 @@
+/* App cues overlay (built by cues.js). Fixed over the Teams window; only its buttons take clicks.
+   Amber reads on both Teams themes; light mode uses a deeper shade to hold contrast on white. */
+:root{ --cue:#FFB000; --cue-soft:rgba(255,176,0,.55); --cue-glow:rgba(255,176,0,.6); --cue-tip:#141A26 }
+html[data-theme="light"]{ --cue:#D98200; --cue-soft:rgba(217,130,0,.6); --cue-glow:rgba(217,130,0,.45) }
+
+.cues{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:1000}
+.cue-ring,.cue-tip{position:absolute; left:0; top:0; animation:cue-in .18s ease-out}
+.cue-ring{border:2.5px solid var(--cue); border-radius:9px; animation:cue-in .18s ease-out, cue-pulse 1.6s ease-out infinite}
+.cue-tip{
+  display:flex; align-items:center; gap:8px; max-width:calc(100% - 16px); padding:7px 7px 7px 12px;
+  border:1px solid var(--cue-soft); border-radius:10px; background:var(--cue-tip); color:#fff;
+  font:600 12.5px/1.3 var(--font); box-shadow:0 6px 18px rgba(0,0,0,.35); white-space:nowrap;
+}
+/* pointer toward the target; --ax is set by cues.js */
+.cue-tip::before{
+  content:""; position:absolute; left:var(--ax,50%); top:-5px; width:9px; height:9px; margin-left:-5px;
+  background:inherit; border:inherit; border-width:1px 0 0 1px; transform:rotate(45deg);
+}
+.cue-tip.above::before{top:auto; bottom:-5px; border-width:0 1px 1px 0}
+.cue-tip.jump::before{display:none}
+.cue-label{min-width:0; overflow:hidden; text-overflow:ellipsis}
+.cue-go,.cue-x{appearance:none; pointer-events:auto; cursor:pointer; border:0; color:#fff; font:inherit}
+.cue-go{display:none; flex:0 0 auto; padding:4px 9px; border-radius:6px; background:var(--cue); color:var(--cue-tip); font-weight:700}
+.cue-tip.jump .cue-go{display:inline-flex}
+.cue-x{width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,.16); font-size:14px; line-height:1;
+  display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto}
+.cue-x:hover{background:rgba(255,255,255,.28)}
+.cue-go:focus-visible,.cue-x:focus-visible{outline:2px solid #13D6E5; outline-offset:2px}
+@keyframes cue-in{from{opacity:0}}
+@keyframes cue-pulse{0%{box-shadow:0 0 0 0 var(--cue-glow)}100%{box-shadow:0 0 0 12px transparent}}
+@media (prefers-reduced-motion:reduce){ .cue-ring,.cue-tip{animation:none!important} }

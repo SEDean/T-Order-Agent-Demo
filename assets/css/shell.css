@@ -1,5 +1,5 @@
 /* Thrive Order Agent: shell styles (Centric OS chrome).
-   Header, stage, and footer only. The Teams window lives in the iframe. */
+   Header and controls, stage, device frame, and footer. The Teams window lives in the iframe. */
 :root{
   /* Centric OS / Compass Digital palette */
   --cd-black:#050E1F; --cd-blue:#003396; --cd-cerulean:#0C76D8; --cd-cyan:#13D6E5;
@@ -13,6 +13,10 @@
   --hover-bg:rgba(214,226,248,.05); --accent:var(--cd-lime); --accent-glow:rgba(203,255,46,.35);
   --glow-a:rgba(12,118,216,.22); --glow-b:rgba(19,214,229,.10);
   --mark-a:#FFFFFF; --mark-b:var(--cd-cerulean); --mark-c:var(--cd-lite-cyan);
+  --on-bg:var(--text-strong); --on-ink:var(--bg);        /* selected segment */
+  --cue:#FFB000; --cue-soft:rgba(255,176,0,.55);  /* app cues amber; the overlay itself is teams/cues.css */
+  --screen-bg:#1f1f1f; --screen-ink:#FFFFFF;              /* Teams surface, under the phone status bar */
+  --bezel:#0B0F17; --bezel-edge:#2A3345; --device-shadow:0 30px 80px rgba(0,0,0,.55);
 }
 :root[data-theme="light"]{
   --bg:#FFFFFF; --text-strong:var(--cd-black); --text:var(--n1); --text-muted:var(--n2);
@@ -20,6 +24,9 @@
   --hover-bg:rgba(12,118,216,.06); --accent:var(--cd-cerulean); --accent-glow:rgba(12,118,216,.30);
   --glow-a:rgba(19,214,229,.14); --glow-b:rgba(227,245,252,.9);
   --mark-a:var(--cd-cerulean); --mark-b:var(--cd-blue); --mark-c:var(--cd-cyan);
+  --screen-bg:#FFFFFF; --screen-ink:#141414;
+  --cue:#D98200; --cue-soft:rgba(217,130,0,.6);
+  --bezel-edge:#3A4356; --device-shadow:0 30px 70px rgba(5,14,31,.22);
 }
 
 *{box-sizing:border-box}
@@ -51,10 +58,10 @@ header{
 .wordmark .sub{font-size:9.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
   color:var(--text-strong); opacity:.92; white-space:nowrap; margin-bottom:1px}
 .divider{width:1px; height:30px; background:var(--border-strong); flex:0 0 auto}
-.context{display:flex; flex-direction:column; line-height:1.2; min-width:0}
+.context{display:flex; flex-direction:column; flex:1 1 auto; line-height:1.2; min-width:0}
 .context .title{font-weight:700; font-size:14.5px; color:var(--text-strong); white-space:nowrap}
 .context .desc{font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.tagline{margin-left:auto; font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+.tagline{font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
   color:var(--text-muted); white-space:nowrap}
 .tagline b{color:var(--accent); font-weight:600}
 :root[data-theme="light"] .tagline b{color:var(--cd-cerulean)}
@@ -72,11 +79,61 @@ header{
 .theme-btn .moon{display:block}
 :root[data-theme="light"] .theme-btn .sun{display:block}
 :root[data-theme="light"] .theme-btn .moon{display:none}
-@media (max-width:860px){ .tagline{display:none} .context .desc{display:none} }
+@media (max-width:1100px){ .tagline{display:none} }
+@media (max-width:860px){ .context .desc{display:none} .seg span{display:none} .seg button{padding:0 9px} }
 
-/* Stage: holds the Teams window */
+/* Header controls: device view (segmented) and app cues (toggle pill) */
+.controls{display:flex; align-items:center; gap:10px; flex:0 0 auto}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--border-strong); border-radius:999px}
+.seg button,.cue-btn{
+  appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 12px;
+  border:0; border-radius:999px; background:none; color:var(--text-muted); font:600 12.5px/1 var(--font);
+  transition:color .2s,background-color .2s,border-color .2s;
+}
+.seg button:hover,.cue-btn:hover{color:var(--text-strong)}
+.seg button[aria-pressed="true"]{background:var(--on-bg); color:var(--on-ink)}
+.seg svg,.cue-btn svg{width:15px; height:15px; flex:0 0 auto}
+.cue-btn{height:34px; border:1px solid var(--border-strong)}
+.cue-btn[aria-pressed="true"]{border-color:var(--cue-soft); color:var(--text-strong)}
+.cue-btn[aria-pressed="true"] svg{color:var(--cue)}
+.cue-btn .cue-state{font-weight:700}
+.seg button:focus-visible,.cue-btn:focus-visible{outline:2px solid var(--cd-cyan); outline-offset:2px}
+
+/* Stage: holds the device, which holds the Teams frame */
 .stage{flex:1 1 auto; min-height:0; position:relative; background:var(--bg); transition:background-color .25s}
+.device{position:absolute; inset:0; display:flex; flex-direction:column}
+.screen{position:relative; flex:1 1 auto; min-height:0}
+.statusbar{display:none}
 .app{width:100%; height:100%; border:0; display:block; background:transparent}
+
+/* Mobile view: the same frame inside a 390pt phone. Its own CSS goes single-column below 720px.
+   Real phones (<=560px) always get the full-bleed layout, so this applies above that only. */
+@media (min-width:561px){
+  :root[data-view="mobile"] .stage{display:grid; place-items:center; padding:20px}
+  :root[data-view="mobile"] .device{
+    position:relative; inset:auto; width:min(390px,100%); height:min(844px,100%);
+    padding:11px; border-radius:56px; background:var(--bezel);
+    box-shadow:0 0 0 1.5px var(--bezel-edge), var(--device-shadow);
+  }
+  :root[data-view="mobile"] .statusbar{
+    position:relative; display:flex; align-items:center; justify-content:space-between; flex:0 0 46px;
+    padding:2px 26px 0 34px; border-radius:45px 45px 0 0; background:var(--screen-bg); color:var(--screen-ink);
+    font:600 15px/1 var(--font); letter-spacing:.01em; transition:background-color .25s,color .25s;
+  }
+  :root[data-view="mobile"] .island{position:absolute; left:50%; top:10px; width:112px; height:32px; margin-left:-56px;
+    border-radius:20px; background:#000}
+  :root[data-view="mobile"] .sys{width:54px; height:12px}
+  :root[data-view="mobile"] .screen{
+    padding-bottom:24px; border-radius:0 0 45px 45px; overflow:hidden; background:var(--screen-bg);
+    transition:background-color .25s;
+  }
+  /* home indicator */
+  :root[data-view="mobile"] .screen::after{
+    content:""; position:absolute; left:50%; bottom:8px; width:134px; height:5px; margin-left:-67px;
+    border-radius:3px; background:var(--screen-ink); opacity:.55; pointer-events:none;
+  }
+}
+
 .loading{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   color:var(--text-faint); font-size:13px; font-weight:500; letter-spacing:.06em; text-transform:uppercase;
@@ -94,7 +151,7 @@ footer .dot{width:5px; height:5px; border-radius:50%; background:var(--accent)}
 footer .right{margin-left:auto; letter-spacing:.04em}
 
 /* Small screens: keep the brand and the theme toggle; drop secondary labels */
-@media (max-width:560px){ .divider, .context{display:none} footer .right{display:none} }
+@media (max-width:560px){ .divider, .context, .seg{display:none} footer .right{display:none} header{gap:10px; padding:12px 16px} .controls{margin-left:auto} }
 
 /* 404 page */
 .notfound{display:flex; align-items:center; justify-content:center; text-align:center; height:100%}
