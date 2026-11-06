@@ -1,4 +1,13 @@
-/* Teams navigation (nav.js): More apps panel, mobile bottom nav, mobile back arrow. */
+/* Teams navigation (nav.js): views, More apps panel, mobile bottom nav, mobile back arrows. */
+
+/* Views. Desktop: calendar | chat list + most recent chat | chat list + Thrive.
+   Mobile (720px and below) shows one pane at a time; see the media query below. */
+.calview,.clist,.chatpane,.convpane{display:none}
+.window[data-view="calendar"] .calview,
+.window[data-view="thrive"] .chatpane,
+.window[data-view="chats"] .convpane,
+.window[data-view="conv"] .convpane,
+.window:not([data-view="calendar"]) .clist{display:flex}
 
 /* More apps. Desktop: a flyout beside the rail; the transparent layer catches outside clicks. */
 .apps{position:absolute;inset:0;z-index:50}
@@ -28,9 +37,13 @@
 .mnav,.topbar .back{display:none}
 
 @media (max-width:720px){
-  /* Bottom nav shows on the calendar only; the Thrive chat gets a back arrow instead. */
-  .window[data-view="calendar"] .mnav{display:flex}
-  .window[data-view="chat"] .topbar .back{display:inline-flex;margin:0 -6px 0 -8px}
+  /* One pane at a time: the chat list is full screen; a chat replaces it, with a back arrow. */
+  .window[data-view] .clist{display:none}
+  .window[data-view="chats"] .clist{display:flex;width:auto;flex:1 1 auto}
+  .window[data-view="chats"] .convpane{display:none}
+  /* Bottom nav on the calendar and the chat list; chats get a back arrow instead. */
+  .window[data-view="calendar"] .mnav,.window[data-view="chats"] .mnav{display:flex}
+  .window[data-view="thrive"] .topbar .back,.window[data-view="conv"] .topbar .back{display:inline-flex;margin:0 -6px 0 -8px}
   .mnav{flex:0 0 auto;justify-content:space-around;padding:6px 4px 10px;background:var(--bg);border-top:1px solid var(--border)}
   .mnav button{appearance:none;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;
     border:0;background:none;color:var(--muted);font:500 11.5px/1 var(--font);cursor:pointer;padding:4px 0}

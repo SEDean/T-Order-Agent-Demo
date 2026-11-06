@@ -1,0 +1,35 @@
+/* Most recent chat pane (chats.js) and the mobile chat list. Bubbles reuse ordering.css. */
+.convpane{flex:1 1 auto;flex-direction:column;min-width:0;border-left:1px solid var(--border);background:var(--bg)}
+.cv-ava{width:32px;height:32px;font-size:12px}
+.cv-people{gap:4px;align-items:center;font:600 13px/1 var(--font)}
+.cv-tabs{padding-left:60px}
+.cv-tab{position:relative;padding:9px 10px 10px;color:var(--muted);font-size:14px;font-weight:600}
+.cv-tab.on{color:var(--strong)}
+.cv-tab.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;background:var(--brand);border-radius:3px 3px 0 0}
+.av.cv-av{color:#fff;font-size:11px;font-weight:700}
+.chat-it#chatTop{outline-offset:-2px}
+.cl-ava{display:none}
+.convpane .apptitle{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.convpane .topbar .right{flex:0 0 auto}
+/* Unread dot: fixed size (it is a span, so `.cprev span` would stretch it), hidden once read */
+.cprev .udot{flex:0 0 9px}
+.chat-it:not(.unread) .udot{display:none}
+
+@media (max-width:720px){
+  .convpane{border-left:0}
+  .cv-tabs{padding-left:16px}
+  /* Mobile chat list: Teams mobile header, filters, then chats only */
+  .clist .cl-h{gap:6px;padding:12px 10px 6px 14px}
+  .cl-ava{display:grid;place-items:center;width:34px;height:34px;margin-right:6px;border-radius:50%;flex:0 0 auto;
+    background:linear-gradient(135deg,#6b8f5a,#3c6446);color:#fff;font-size:12px;font-weight:700}
+  .clist .cl-h h2{font-size:24px}
+  .clist .cl-h .btn-ic svg{width:22px;height:22px}
+  .clist .cl-filters{padding:6px 14px 10px}
+  .clist .cl-row,.clist .cl-sec{display:none}
+  .clist .cl-scroll{padding:0 6px 12px}
+  .clist .chat-it{padding:10px 8px;gap:12px}
+  .clist .cava{width:44px;height:44px;font-size:14px}
+  .clist .cname{font-size:15px}
+  .clist .cprev span{font-size:13.5px}
+  .clist .chat-it.sel{background:none}
+}

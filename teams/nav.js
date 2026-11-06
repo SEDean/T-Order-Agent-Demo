@@ -1,7 +1,11 @@
 /**
- * Teams navigation inside the frame: Calendar ⇄ Chat (Thrive), and the More apps panel.
- * - .window[data-view] is "calendar" (landing) or "chat"; CSS shows the matching view.
- * - [data-go="calendar|chat"] buttons switch views (rail, mobile nav, mobile back arrow).
+ * Teams navigation inside the frame. .window[data-view] picks what shows (nav.css):
+ *   calendar  landing view
+ *   chats     chat list; on desktop the most recent chat opens beside it
+ *   conv      the most recent chat (mobile: full screen with a back arrow)
+ *   thrive    the Thrive chat, reached only from More apps
+ * - [data-go="calendar|chats"] buttons on the rail and mobile nav switch views.
+ * - [data-back] arrows (mobile) return from conv to chats, and from Thrive to where it was opened.
  * - [data-apps] buttons open #apps: a flyout beside the rail on desktop, a bottom sheet
  *   on mobile (same DOM, styled in nav.css). Picking Thrive opens the Thrive chat.
  * Ordering state lives in ordering.js and is kept across view switches.
@@ -12,7 +16,10 @@
   const apps = document.getElementById("apps");
   const card = apps.querySelector(".apps-card");
   const list = document.getElementById("appsList");
-  let opener = null;
+  const top = document.getElementById("chatTop"), thrive = document.getElementById("chatThrive");
+  const narrow = window.matchMedia("(max-width:720px)");
+  const TAB = { calendar: "calendar", chats: "chats", conv: "chats", thrive: "chats" };   // highlighted nav button
+  let opener = null, from = "calendar";
 
   /* Placeholder apps; only Thrive opens. g = SVG path drawn on a coloured tile. */
   const APPS = [
@@ -43,8 +50,13 @@
 
   function go(view) {
     closeApps();
+    const was = win.dataset.view;
+    if (view === "thrive" && was !== "thrive") from = was === "conv" ? "chats" : was;
     win.dataset.view = view;
-    document.querySelectorAll("[data-go]").forEach((b) => b.classList.toggle("on", b.dataset.go === view));
+    document.querySelectorAll("[data-go]").forEach((b) => b.classList.toggle("on", b.dataset.go === TAB[view]));
+    top.classList.toggle("sel", view !== "thrive");
+    thrive.classList.toggle("sel", view === "thrive");
+    if (view === "conv" || (view === "chats" && !narrow.matches)) top.classList.remove("unread");   // opened = read
   }
 
   function openApps(btn) {
@@ -66,7 +78,11 @@
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
   document.querySelectorAll("[data-apps]").forEach((b) =>
     b.addEventListener("click", () => (apps.hidden ? openApps(b) : closeApps())));
-  document.getElementById("appThrive").addEventListener("click", () => go("chat"));
+  document.querySelectorAll("[data-back]").forEach((b) =>
+    b.addEventListener("click", () => go(win.dataset.view === "conv" ? "chats" : from)));
+  top.addEventListener("click", () => go("conv"));
+  top.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("conv"); } });
+  document.getElementById("appThrive").addEventListener("click", () => go("thrive"));
   apps.addEventListener("click", (e) => { if (e.target === apps) closeApps(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeApps(); });
   window.addEventListener("resize", closeApps);

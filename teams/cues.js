@@ -66,11 +66,14 @@
 
   /** Returns { el, text } to ring, { jump, text } when the target is scrolled away, or null. */
   function nextStep() {
-    /* Calendar landing: More apps (rail on desktop, bottom nav on mobile) → Thrive */
-    if (document.querySelector(".window").dataset.view === "calendar") {
+    /* Until Thrive is open: More apps (rail on desktop, bottom nav on mobile) → Thrive.
+       In a full-screen mobile chat, where More is hidden, point at the back arrow first. */
+    if (document.querySelector(".window").dataset.view !== "thrive") {
       if (!$("apps").hidden) return { el: $("appThrive"), text: verb() + " Thrive to open it" };
       const more = [...document.querySelectorAll("[data-apps]")].find(shown);
-      return more && { el: more, text: narrow.matches ? "Tap More to find Thrive" : "Click More apps to find Thrive" };
+      if (more) return { el: more, text: narrow.matches ? "Tap More to find Thrive" : "Click More apps to find Thrive" };
+      const back = [...document.querySelectorAll("[data-back]")].find(shown);
+      return back && { el: back, text: "Tap back, then More to find Thrive" };
     }
     if ($("overlay").classList.contains("show")) return { el: $("modalCreate"), text: "Create your pre-order" };
     const tab = document.querySelector('.tab[data-tab="messages"]');

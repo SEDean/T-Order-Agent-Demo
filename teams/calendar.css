@@ -1,5 +1,5 @@
 /* Teams Calendar (calendar.js). Desktop Day view above 720px, mobile Agenda view at 720px and below.
-   View switching: .window[data-view] shows the calendar or the chat (chat list + Thrive pane). */
+   Which view is showing is set in nav.css. */
 :root{
   --cal-bg:#292929; --cal-line:#3a3a3a; --cal-half:#323232;
   --ev-bg:#05303d; --ev-bar:#0e7a8f; --ev-text:#e8f4f7; --ev-sub:#b5ccd2;
@@ -11,9 +11,6 @@ html[data-theme="light"]{
   --now:#5b5fc7; --hatch:#b9bbcc;
 }
 
-.window[data-view="calendar"] .clist,
-.window[data-view="calendar"] .chatpane,
-.window[data-view="chat"] .calview{display:none}
 .calview{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;background:var(--bg);border-left:1px solid var(--border)}
 .calview svg{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .calview button{appearance:none;font:inherit;color:inherit;background:none;border:0;cursor:pointer}
