@@ -1,35 +1,55 @@
-/* Most recent chat pane (chats.js) and the mobile chat list. Bubbles reuse ordering.css. */
-.convpane{flex:1 1 auto;flex-direction:column;min-width:0;border-left:1px solid var(--border);background:var(--bg)}
+/* Chat (chats.js): conversation pane, plus the list-screen header and rows shared by every
+   list pane (Teams.ui.listPane). Bubbles reuse ordering.css. */
+.cv-head{display:flex;align-items:center;gap:12px;min-width:0}
 .cv-ava{width:32px;height:32px;font-size:12px}
-.cv-people{gap:4px;align-items:center;font:600 13px/1 var(--font)}
+.cv-titles{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.cv-titles .apptitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv-sub{color:var(--muted);font-size:12px}
+.topbar .right{flex:0 0 auto}
+.cv-people{gap:4px;align-items:center;font:600 13px/1 var(--font);cursor:default}
 .cv-tabs{padding-left:60px}
 .cv-tab{position:relative;padding:9px 10px 10px;color:var(--muted);font-size:14px;font-weight:600}
 .cv-tab.on{color:var(--strong)}
 .cv-tab.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;background:var(--brand);border-radius:3px 3px 0 0}
-.av.cv-av{color:#fff;font-size:11px;font-weight:700}
-.chat-it#chatTop{outline-offset:-2px}
+.cava.cv-av{width:28px;height:28px;font-size:11px;margin-bottom:2px}
+.cv-av .dot{display:none}
+.cv-mention{color:var(--brand);font-weight:600}
+.cv-sys{text-align:center;color:var(--muted);font-size:12px;padding:8px 16px}
+.convpane .msgs .today{position:static;margin:10px 0 6px}
+
+/* List screens: header, search, chips, rows */
+.cl-h .back{margin-left:-8px}
 .cl-ava{display:none}
-.convpane .apptitle{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.convpane .topbar .right{flex:0 0 auto}
-/* Unread dot: fixed size (it is a span, so `.cprev span` would stretch it), hidden once read */
+.cl-search{display:flex;align-items:center;gap:8px;margin:2px 14px 6px 18px;padding:0 4px 0 10px;height:32px;border-radius:4px;
+  background:var(--panel);border:1px solid var(--border);border-bottom:2px solid var(--brand);color:var(--faint)}
+.cl-search[hidden]{display:none}
+.cl-search .ic{width:15px;height:15px;flex:0 0 auto}
+.cl-search input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:13.5px}
+.cl-search .btn-ic{padding:4px}
+.cl-search .btn-ic svg{width:14px;height:14px}
+.pillbtn[aria-pressed="true"]{background:#33344a;border-color:#444791;color:#a6a7f1}
+html[data-theme="light"] .pillbtn[aria-pressed="true"]{background:#e8ebfa;border-color:#c5c7f0;color:#4f52b2}
+.chat-it[hidden],.cl-row[hidden]{display:none}
+.chat-it:focus-visible,.cl-row:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
 .cprev .udot{flex:0 0 9px}
 .chat-it:not(.unread) .udot{display:none}
 
 @media (max-width:720px){
-  .convpane{border-left:0}
   .cv-tabs{padding-left:16px}
-  /* Mobile chat list: Teams mobile header, filters, then chats only */
-  .clist .cl-h{gap:6px;padding:12px 10px 6px 14px}
+  /* Teams mobile list header: avatar, large title, icons */
+  .pane .cl-h{gap:6px;padding:12px 10px 6px 14px}
   .cl-ava{display:grid;place-items:center;width:34px;height:34px;margin-right:6px;border-radius:50%;flex:0 0 auto;
     background:linear-gradient(135deg,#6b8f5a,#3c6446);color:#fff;font-size:12px;font-weight:700}
-  .clist .cl-h h2{font-size:24px}
-  .clist .cl-h .btn-ic svg{width:22px;height:22px}
-  .clist .cl-filters{padding:6px 14px 10px}
+  .pane .cl-h h2{font-size:24px}
+  .pane .cl-h .btn-ic svg{width:22px;height:22px}
+  .pane .cl-search{margin:2px 14px 8px}
+  .pane .cl-filters{padding:6px 14px 10px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .pane .cl-filters::-webkit-scrollbar{display:none}
   .clist .cl-row,.clist .cl-sec{display:none}
-  .clist .cl-scroll{padding:0 6px 12px}
-  .clist .chat-it{padding:10px 8px;gap:12px}
-  .clist .cava{width:44px;height:44px;font-size:14px}
-  .clist .cname{font-size:15px}
-  .clist .cprev span{font-size:13.5px}
+  .pane .cl-scroll{padding:0 6px 12px}
+  .pane .chat-it{padding:10px 8px;gap:12px}
+  .pane .chat-it .cava{width:44px;height:44px;font-size:14px}
+  .pane .cname{font-size:15px}
+  .pane .cprev span{font-size:13.5px}
   .clist .chat-it.sel{background:none}
 }

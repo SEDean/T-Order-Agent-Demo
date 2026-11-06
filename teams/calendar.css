@@ -44,6 +44,9 @@ html[data-theme="light"]{
 .ch-day{flex:1;border-top:3px solid var(--now);padding:6px 14px 6px;display:flex;flex-direction:column;line-height:1.15}
 .ch-day b{font-size:22px;font-weight:600;color:var(--now)}
 .ch-day span{font-size:12.5px;color:var(--now)}
+.cal-head.other .ch-day{border-top-color:var(--cal-line)}
+.cal-head.other .ch-day b,.cal-head.other .ch-day span{color:var(--strong)}
+.ad-none{flex:1;height:24px}
 .cal-allday{display:flex;flex:0 0 auto;background:var(--cal-bg);border-bottom:1px solid var(--cal-line);padding-bottom:3px}
 .ad-band{flex:1;display:flex;align-items:center;gap:10px;margin:0 6px 0 2px;height:24px;padding:0 8px;border-left:3px solid var(--ev-bar);
   background:var(--ev-bg);color:var(--ev-text);font-size:12px;border-radius:2px;min-width:0}
@@ -94,6 +97,10 @@ html[data-theme="light"]{
   .mw-m{font-size:12px;color:var(--strong);height:16px;align-self:stretch;text-align:left;padding-left:8px}
   .mw-d b{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;font-size:17px;font-weight:500;color:var(--strong)}
   .mw-d.on b{background:var(--now);color:#fff;font-weight:600}
+  .mw-d.is-today:not(.on) b{color:var(--now);font-weight:700}
+  .m-daygrid{flex:1;min-height:0;display:flex;flex-direction:column}
+  .m-daygrid .cg-gutter{width:52px}
+  .ag-free{margin:4px 0 14px;color:var(--muted);font-size:14px}
   .m-grab{height:18px;flex:0 0 auto;background:var(--panel);position:relative}
   .m-grab::after{content:"";position:absolute;left:50%;top:7px;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:var(--border-strong)}
   .ag-list{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 90px}

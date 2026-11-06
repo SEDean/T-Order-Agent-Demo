@@ -66,6 +66,7 @@
 
   /** Returns { el, text } to ring, { jump, text } when the target is scrolled away, or null. */
   function nextStep() {
+    if (document.querySelector(".callx")) return null;     // no tips over the in-call screen
     /* Until Thrive is open: More apps (rail on desktop, bottom nav on mobile) → Thrive.
        In a full-screen mobile chat, where More is hidden, point at the back arrow first. */
     if (document.querySelector(".window").dataset.view !== "thrive") {

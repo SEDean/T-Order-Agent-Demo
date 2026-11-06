@@ -9,12 +9,18 @@ index.html               Centric OS shell (header + view controls, Teams stage, 
 404.html                 Not-found page
 teams/
   ordering.html          Teams window, loaded by index.html (opens on Calendar)
-  calendar.js / .css     Teams Calendar landing view: desktop Day view, mobile Agenda view
-  nav.js / nav.css       Views (calendar, chats, Thrive), More apps flyout / sheet, mobile nav
-  chats.js / chats.css   Most recent chat (sample conversation), mobile chat list
-  ordering.js            Conversation, cart, and pre-order logic
-  ordering.css           Teams window styles
+  ordering.js / .css     Thrive conversation, cart, and pre-order logic; Teams window styles
   menu.js                Eurest Cafe menu data, photo and brand-tile paths
+  ui.js                  Shared builders (elements, icons, avatars, list screens with search + chips)
+  data.js                Sample people, chats, activity, calls, files, teams, notes (all fictional)
+  nav.js / nav.css       Views and panes, More apps flyout / sheet, mobile nav and back arrows
+  calendar.js / .css     Calendar: desktop Day view with date navigation; mobile Agenda / Day
+  chats.js / chats.css   Chat list and conversations; shared list-screen styles
+  activity.js / .css     Activity feed, filters, unread badges
+  calls.js               Call history, dial pad, in-call screen
+  files.js, channels.js  Files / OneDrive; Teams and channel posts
+  extras.js              Copilot, Notes, People
+  screens.css            Styles for calls, files, teams, copilot, notes, people, in-call
   cues.js / cues.css     App cues overlay (runs inside the Teams frame)
 assets/
   css/shell.css          Shell styles          css/fonts.css   Self-hosted Inter
@@ -34,9 +40,23 @@ The header carries three controls next to the Centric OS brand:
 |---|---|
 | **Desktop / Mobile** | Desktop fills the stage with the full Teams window. Mobile shows the same frame inside a 390 × 844 phone, where the frame's responsive CSS collapses to the single-column Teams layout. Hidden on real phones (560 px and narrower), which always get the full-bleed mobile layout. |
 | **Cues on / off** | Rings the next control in the ordering flow with a short tip: More apps → Thrive → Chat tab → pick a spot → choose a category → add an item (or pick an option) → check out → start a new order. The pre-order modal and "Confirm & Checkout" are covered too. If the target is scrolled out of view, the tip offers **Show me ↓**. The tip's × turns cues off. |
-| **Theme** | Light or dark, shared with the Teams frame. |
+| **Theme** | Light (default) or dark, shared with the Teams frame. Desktop only. |
 
-The Teams window opens on **Calendar**, as Teams does. Desktop shows the Day view; mobile shows the Agenda view with the bottom nav. **Chat** (rail or bottom nav) lists all chats: on desktop the most recent chat (a sample group conversation) opens beside the list; on mobile the list fills the screen and tapping the top chat opens it. Thrive is reached only from **More apps** (the rail's "…" on desktop, **More** in the bottom nav on mobile), which opens the Thrive chat. On mobile the back arrow returns to where you came from. The order in progress is kept across views. The calendar always shows the viewer's today, and its meetings are generic sample content placed around the current hour.
+The Teams window opens on **Calendar**, as Teams does, and every nav item opens a working screen with fictional content:
+
+| Screen | Desktop rail | Phone | What works |
+|---|---|---|---|
+| Activity | ✓ | bottom nav | Feed; Unread / Mentions / Replies / Reactions / Missed calls; search; items open their chat, call history, channel, files, or calendar; badges count unread |
+| Chat | ✓ | bottom nav | Every chat opens; Unread / Chats / Meeting chats; search; send messages; call and video buttons |
+| Teams | ✓ | More | Teams and channels (collapsible); channel posts; start a post |
+| Calendar | ✓ | bottom nav | Desktop: Today, ‹ ›; phone: Agenda / Day, tap a day, swipe the week strip |
+| Calls | ✓ | bottom nav | History with Missed / Incoming / Outgoing / Voicemail; dial pad and speed dial (desktop); in-call screen |
+| Files (OneDrive) | ✓ | bottom nav | Shared / Favorites / Word / Excel / PDF; search; star files |
+| Copilot, Notes, People | ✓ | More | Copilot answers from the demo data; notes open; people can be chatted or called |
+
+Thrive is reached only from **More apps** (the rail's "…" or Add apps on desktop, **More** on phones). On phones, screens opened from a list or from More show a back arrow that returns to where you came from. Ordering state is kept across screens.
+
+**Phones** (560 px and narrower) show only Teams: the demo header and footer are hidden, the theme is always light, and cues are turned off with the tip's ×. The desktop **Mobile** preview keeps the header.
 
 Defaults are **Mobile** and **Cues on**. Choices are saved per browser in `localStorage`.
 

@@ -13,6 +13,8 @@
 <link rel="stylesheet" href="calendar.css" />
 <link rel="stylesheet" href="nav.css" />
 <link rel="stylesheet" href="chats.css" />
+<link rel="stylesheet" href="activity.css" />
+<link rel="stylesheet" href="screens.css" />
 <link rel="stylesheet" href="cues.css" />
 </head>
 <body>
@@ -34,83 +36,30 @@
   <div class="shell">
     <!-- App rail -->
     <nav class="rail" aria-label="App bar">
-      <button class="rit" title="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="rbadge">14</span></button>
+      <button class="rit" title="Activity" data-go="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="rbadge"></span></button>
       <button class="rit" title="Chat" data-go="chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 00-7.7 13.7L3 21l4.5-1.2A9 9 0 1012 3z"/></svg><span class="rbadge">2</span></button>
-      <button class="rit" title="Teams"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0"/><circle cx="17" cy="9.5" r="2.3"/><path d="M15.6 14.6a4.6 4.6 0 015 4.4"/></svg><span class="rbadge">1</span></button>
+      <button class="rit" title="Teams" data-go="teams"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0"/><circle cx="17" cy="9.5" r="2.3"/><path d="M15.6 14.6a4.6 4.6 0 015 4.4"/></svg><span class="rbadge">1</span></button>
       <button class="rit on" title="Calendar" data-go="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4M8 13h2M12 13h2M16 13h.5M8 16.5h2M12 16.5h2"/></svg></button>
-      <button class="rit" title="Calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l1.5 4.5-2.3 1.7a12 12 0 005.6 5.6l1.7-2.3L20 15v4a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 4z"/></svg></button>
-      <button class="rit" title="OneDrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 18h11a4 4 0 100-8 6 6 0 00-11.3-1.5A4.5 4.5 0 007 18z"/></svg></button>
-      <button class="rit" title="Copilot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/><path d="M18.5 15.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></svg></button>
-      <button class="rit" title="Notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></button>
+      <button class="rit" title="Calls" data-go="calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l1.5 4.5-2.3 1.7a12 12 0 005.6 5.6l1.7-2.3L20 15v4a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 4z"/></svg></button>
+      <button class="rit" title="OneDrive" data-go="files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 18h11a4 4 0 100-8 6 6 0 00-11.3-1.5A4.5 4.5 0 007 18z"/></svg></button>
+      <button class="rit" title="Copilot" data-go="copilot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/><path d="M18.5 15.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></svg></button>
+      <button class="rit" title="Notes" data-go="notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></button>
       <button class="rit" title="More apps" data-apps aria-haspopup="dialog" aria-expanded="false" aria-controls="apps"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
-      <button class="rit" title="Add apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg></button>
+      <button class="rit" title="Add apps" data-apps aria-haspopup="dialog" aria-expanded="false" aria-controls="apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg></button>
       <span class="rsp"></span>
-      <button class="rit" title="People"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0113 0"/></svg></button>
+      <button class="rit" title="People" data-go="people"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0113 0"/></svg></button>
     </nav>
 
-    <!-- Chat list -->
-    <aside class="clist" aria-label="Chat list">
-      <div class="cl-h">
-        <span class="cl-ava" aria-hidden="true">JS</span>
-        <h2>Chat</h2>
-        <button class="btn-ic" title="Filter"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
-        <button class="btn-ic" title="Search chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
-        <button class="btn-ic" title="New chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 5l6 6-9.5 9.5H4V15L13 5z"/><path d="M11 7.5l5.5 5.5"/></svg></button>
-      </div>
-      <div class="cl-filters">
-        <button class="pillbtn">Unread</button><button class="pillbtn">Chats</button><button class="pillbtn">Meeting chats</button>
-      </div>
-      <div class="cl-scroll">
-        <div class="cl-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>Copilot</div>
-        <div class="cl-sec"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>Quick views</div>
-        <div class="cl-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M16 12v1.5a2.5 2.5 0 005 0V12a9 9 0 10-3.5 7.1"/></svg>Mentions</div>
-        <div class="cl-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 5l6 6-9.5 9.5H4V15L13 5z"/></svg>Drafts</div>
-        <div class="cl-sec"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>Favorites</div>
-        <div class="cl-sec"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>Chats</div>
+    <!-- Side panes (lists) come before main panes. Each screen's script builds its pane. -->
+    <aside id="actlist" aria-label="Activity"></aside>
+    <aside id="clist" aria-label="Chat list"></aside>
+    <aside id="teamlist" aria-label="Teams"></aside>
+    <aside id="callpad" aria-label="Make a call"></aside>
+    <aside id="notelist" aria-label="Notes"></aside>
+    <section id="calview" aria-label="Calendar"></section>
 
-        <div class="chat-it unread" id="chatTop" role="button" tabindex="0" aria-label="Harborview Digital Launch"><span class="cava" style="background:#0f6cbd">HD<span class="dot av"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Harborview Digital ...</span><span class="ctime">9:52 AM</span></span>
-          <span class="cprev"><span>Sato, Frankie: Still not...</span><span class="udot"></span></span></span></div>
-        <div class="chat-it unread"><span class="cava" style="background:#116149">AC<span class="dot av"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">ACME Centr...</span><span class="ctime">8:45 AM</span></span>
-          <span class="cprev"><span>Marks, Cal: It will. It ...</span><span class="udot"></span></span></span></div>
-        <div class="chat-it" id="chatThrive"><span class="cava bot"><img class="avimg" src="../assets/brand/thrive.png" alt=""><span class="dot av"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Thrive</span><span class="ctime">7/16</span></span>
-          <span class="cprev"><span>Thrive: Pick a spot to order from</span></span></span></div>
-        <div class="chat-it"><span class="cava" style="background:#7a3b8f">JS<span class="dot bsy"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Smith, John (You)</span><span class="ctime">7/15</span></span>
-          <span class="cprev"><span>You: Sent a file</span></span></span></div>
-        <div class="chat-it"><span class="cava" style="background:#8e562e">VK<span class="dot av"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Kapoor, Vinit, +2</span><span class="ctime">7/15</span></span>
-          <span class="cprev"><span>Kapoor, Vinit: Hi John, You ...</span></span></span></div>
-        <div class="chat-it"><span class="cava" style="background:#3b3a39">JG<span class="dot aw"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Gutierrez, Jon</span><span class="ctime">7/15</span></span>
-          <span class="cprev"><span>Possibly</span></span></span></div>
-        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Nexbridge Integration S...</span><span class="ctime">7/15</span></span>
-          <span class="cprev"><span>Chang, Ian: gtg, thank you ev...</span></span></span></div>
-        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
-          <span class="cmain"><span class="crow1"><span class="cname">App Troubleshoot...</span><span class="ctime">7/14</span></span>
-          <span class="cprev"><span>&nbsp;</span></span></span></div>
-        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Solano Launch Openi...</span><span class="ctime">7/14</span></span>
-          <span class="cprev"><span>Sent a file</span></span></span></div>
-        <div class="chat-it"><span class="cava" style="background:#635a83">SB<span class="dot aw"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Bianchi, Serena</span><span class="ctime">7/13</span></span>
-          <span class="cprev"><span>You: Forwarded a message</span></span></span></div>
-        <div class="chat-it"><span class="cava" style="background:#4a5568">CC<span class="dot av"></span></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Calder, Charlie</span><span class="ctime">7/13</span></span>
-          <span class="cprev"><span>You: Is it possible to get a co...</span></span></span></div>
-        <div class="chat-it"><span class="cava grp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
-          <span class="cmain"><span class="crow1"><span class="cname">Wellness/MRN Cen...</span><span class="ctime">7/13</span></span>
-          <span class="cprev"><span>Recording is ready</span></span></span></div>
-      </div>
-    </aside>
 
-    <!-- Calendar (landing view), rendered by calendar.js -->
-    <section class="calview" id="calview" aria-label="Calendar"></section>
-
-    <section class="chatpane">
+    <section class="pane main chatpane" id="chatpane">
 
   <div class="topbar">
     <button class="btn-ic back" data-back title="Back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
@@ -204,40 +153,22 @@
   </div>
     </section><!-- /chatpane -->
 
-    <!-- Most recent chat: shown when Chat is opened (desktop) or tapped (mobile). Content from chats.js -->
-    <section class="convpane" aria-label="Harborview Digital Launch">
-      <div class="topbar">
-        <button class="btn-ic back" data-back title="Back" aria-label="Back to chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
-        <span class="cava cv-ava" style="background:#0f6cbd">HD</span>
-        <span class="apptitle">Harborview Digital Launch</span>
-        <div class="right">
-          <button class="btn-ic" title="Video call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6.5" width="12.5" height="11" rx="2.5"/><path d="M15.5 10.8l4.3-2.6a.5.5 0 01.7.4v6.8a.5.5 0 01-.7.4l-4.3-2.6"/></svg></button>
-          <button class="btn-ic cv-people" title="4 people"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0"/><circle cx="17" cy="9.5" r="2.3"/><path d="M15.6 14.6a4.6 4.6 0 015 4.4"/></svg>4</button>
-          <button class="btn-ic" title="More options"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
-        </div>
-      </div>
-      <div class="tabs cv-tabs" aria-hidden="true">
-        <span class="cv-tab on">Chat</span><span class="cv-tab">Shared</span><span class="cv-tab">+</span>
-      </div>
-      <div class="scroll" id="convScroll"><div class="msgs" id="convMsgs"><div class="today"><span>Today</span></div></div></div>
-      <div class="composer">
-        <div class="cbox"><div class="crow">
-          <input id="convInput" placeholder="Type a message" aria-label="Type a message" />
-          <div class="cicons">
-            <button class="send" type="button" id="convSend" title="Send" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4.5 12L20 4.5 16.5 20l-4.3-5.2L4.5 12z"/><path d="M12.2 14.8L20 4.5"/></svg></button>
-          </div>
-        </div></div>
-      </div>
-    </section>
+    <section id="convpane" aria-label="Chat"></section>
+    <section id="chanpane" aria-label="Channel"></section>
+    <section id="callhist" aria-label="Call history"></section>
+    <section id="filelist" aria-label="Files"></section>
+    <section id="notepane" aria-label="Note"></section>
+    <section id="peoplelist" aria-label="People"></section>
+    <section id="copilot" aria-label="Copilot"></section>
   </div><!-- /shell -->
 
   <!-- Mobile bottom nav (calendar view, 720px and narrower) -->
   <nav class="mnav" aria-label="Teams">
-    <button type="button" title="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="rbadge">6</span>Activity</button>
+    <button type="button" title="Activity" data-go="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="rbadge"></span>Activity</button>
     <button type="button" title="Chat" data-go="chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 00-7.7 13.7L3 21l4.5-1.2A9 9 0 1012 3z"/></svg><span class="rbadge">1</span>Chat</button>
     <button type="button" title="Calendar" data-go="calendar" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4M8 13h2M12 13h2M16 13h.5M8 16.5h2M12 16.5h2"/></svg>Calendar</button>
-    <button type="button" title="Calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l1.5 4.5-2.3 1.7a12 12 0 005.6 5.6l1.7-2.3L20 15v4a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 4z"/></svg>Calls</button>
-    <button type="button" title="Files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 3.5h7l4.5 4.5v12.5H7z"/><path d="M14 3.5V8h4.5"/></svg>Files</button>
+    <button type="button" title="Calls" data-go="calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l1.5 4.5-2.3 1.7a12 12 0 005.6 5.6l1.7-2.3L20 15v4a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 4z"/></svg>Calls</button>
+    <button type="button" title="Files" data-go="files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 3.5h7l4.5 4.5v12.5H7z"/><path d="M14 3.5V8h4.5"/></svg>Files</button>
     <button type="button" title="More" data-apps aria-haspopup="dialog" aria-expanded="false" aria-controls="apps"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</button>
   </nav>
 
@@ -256,9 +187,16 @@
 
 <script src="menu.js"></script>
 <script src="ordering.js"></script>
+<script src="ui.js"></script>
+<script src="data.js"></script>
+<script src="nav.js"></script>
 <script src="calendar.js"></script>
 <script src="chats.js"></script>
-<script src="nav.js"></script>
+<script src="activity.js"></script>
+<script src="calls.js"></script>
+<script src="files.js"></script>
+<script src="channels.js"></script>
+<script src="extras.js"></script>
 <script src="cues.js"></script>
 </body>
 </html>

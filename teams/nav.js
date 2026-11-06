@@ -1,63 +1,95 @@
 /**
- * Teams navigation inside the frame. .window[data-view] picks what shows (nav.css):
- *   calendar  landing view
- *   chats     chat list; on desktop the most recent chat opens beside it
- *   conv      the most recent chat (mobile: full screen with a back arrow)
- *   thrive    the Thrive chat, reached only from More apps
- * - [data-go="calendar|chats"] buttons on the rail and mobile nav switch views.
- * - [data-back] arrows (mobile) return from conv to chats, and from Thrive to where it was opened.
- * - [data-apps] buttons open #apps: a flyout beside the rail on desktop, a bottom sheet
- *   on mobile (same DOM, styled in nav.css). Picking Thrive opens the Thrive chat.
+ * Teams navigation inside the frame (window.Teams.go / back / reveal).
+ *
+ * A view is a set of panes. LAYOUT lists, per view, the panes shown on desktop (d) and on
+ * mobile (m, 720px and below, one pane at a time). Panes are elements with class "pane";
+ * the visible ones get class "on" (nav.css). .window[data-view] names the current view.
+ *
+ * Mobile "detail" views (a chat, a channel, a note, Thrive, and screens opened from More)
+ * hide the bottom nav and show a back arrow, which returns to the view they were opened from.
+ * After every change a "teams:view" event carries { view, panes } so screens can react.
+ *
+ * - [data-go="<view>"] buttons (rail, mobile nav, More sheet) switch views.
+ * - [data-back] arrows go back. [data-apps] buttons open #apps: a flyout beside the rail on
+ *   desktop, a bottom sheet on mobile. Picking Thrive there is the only way into Thrive.
  * Ordering state lives in ordering.js and is kept across view switches.
  */
 "use strict";
 (function () {
+  const T = window.Teams, { el, icon, button } = T.ui;
   const win = document.querySelector(".window");
+  const narrow = window.matchMedia("(max-width:720px)");
+
+  /* tab = highlighted nav button (defaults to the view it was opened from). */
+  const LAYOUT = {
+    calendar: { d: "calview", m: "calview", tab: "calendar" },
+    activity: { d: "actlist convpane", m: "actlist", tab: "activity" },
+    chats:    { d: "clist convpane", m: "clist", tab: "chats" },
+    conv:     { d: "clist convpane", m: "convpane", detail: true },
+    thrive:   { d: "clist chatpane", m: "chatpane", detail: true, tab: "chats" },
+    teams:    { d: "teamlist chanpane", m: "teamlist", tab: "teams", mDetail: true },
+    channel:  { d: "teamlist chanpane", m: "chanpane", detail: true, tab: "teams" },
+    calls:    { d: "callpad callhist", m: "callhist", tab: "calls" },
+    files:    { d: "filelist", m: "filelist", tab: "files" },
+    copilot:  { d: "copilot", m: "copilot", tab: "copilot", mDetail: true },
+    notes:    { d: "notelist notepane", m: "notelist", tab: "notes", mDetail: true },
+    note:     { d: "notelist notepane", m: "notepane", detail: true, tab: "notes" },
+    people:   { d: "peoplelist", m: "peoplelist", tab: "people", mDetail: true },
+  };
+  /* Where a detail pane lives on desktop, beside its list. */
+  const HOME = { conv: "chats", channel: "teams", note: "notes" };
+  const origin = {};
+  const isDetail = (v) => narrow.matches && !!(LAYOUT[v].detail || LAYOUT[v].mDetail);
+  const tabOf = (v) => LAYOUT[v].tab || (origin[v] ? tabOf(origin[v]) : "chats");
+  const panesOf = (v) => new Set(LAYOUT[v][narrow.matches ? "m" : "d"].split(" "));
+
+  function apply() {
+    const view = win.dataset.view, show = panesOf(view);
+    document.querySelectorAll(".pane").forEach((p) => p.classList.toggle("on", show.has(p.id)));
+    win.classList.toggle("detail", isDetail(view));
+    const tab = tabOf(view);
+    document.querySelectorAll("[data-go]").forEach((b) => b.classList.toggle("on", b.dataset.go === tab));
+    document.dispatchEvent(new CustomEvent("teams:view", { detail: { view, panes: show } }));
+  }
+  function go(view, returning) {
+    if (!LAYOUT[view]) return;
+    closeApps();
+    const was = win.dataset.view;
+    if (was !== view && isDetail(view) && !returning) origin[view] = was;
+    win.dataset.view = view;
+    apply();
+  }
+  const back = () => go(origin[win.dataset.view] || "calendar", true);
+  /* Show a detail view: on mobile go to it; on desktop show its pane beside the current list
+     if it is already there (e.g. a chat beside Activity), else go to its home list. */
+  function reveal(detail) {
+    if (narrow.matches) go(detail);
+    else if (!panesOf(win.dataset.view).has(LAYOUT[detail].d.split(" ").pop())) go(HOME[detail] || detail);
+  }
+
+  /* ---------- More apps ---------- */
   const apps = document.getElementById("apps");
   const card = apps.querySelector(".apps-card");
   const list = document.getElementById("appsList");
-  const top = document.getElementById("chatTop"), thrive = document.getElementById("chatThrive");
-  const narrow = window.matchMedia("(max-width:720px)");
-  const TAB = { calendar: "calendar", chats: "chats", conv: "chats", thrive: "chats" };   // highlighted nav button
-  let opener = null, from = "calendar";
-
-  /* Placeholder apps; only Thrive opens. g = SVG path drawn on a coloured tile. */
-  const APPS = [
+  let opener = null;
+  /* Placeholder apps (visual only), then Teams screens that are on the desktop rail but not
+     in the mobile bottom nav (shown in the sheet on mobile only). g = SVG path on a tile. */
+  [
     { name: "Approvals", bg: "#2f7d5b", g: "M7 12.5l3 3 7-7" },
     { name: "Planner", bg: "#3f7c3a", g: "M7 7h10M7 12h10M7 17h6" },
     { name: "Shifts", bg: "#8a5a2b", g: "M12 6v6l4 2M12 3.5a8.5 8.5 0 100 17 8.5 8.5 0 000-17z" },
     { name: "Lists", bg: "#a33f6e", g: "M9 7h9M9 12h9M9 17h9M5.5 7h.01M5.5 12h.01M5.5 17h.01" },
-    { name: "Bookings", bg: "#1f6aa5", g: "M5 6.5h14v12H5zM5 10h14M9 4v4M15 4v4" },
-    { name: "Forms", bg: "#3a7a7a", g: "M7 5h10v14H7zM10 9h4M10 13h4" },
-  ];
-  const NS = "http://www.w3.org/2000/svg";
-  APPS.forEach((a) => {
-    const tile = document.createElement("span");
-    tile.className = "app-ic";
+    { name: "Teams", bg: "#4f52b2", g: "people", go: "teams" },
+    { name: "Copilot", bg: "#5b5fc7", g: "sparkle", go: "copilot" },
+    { name: "Notes", bg: "#b3740f", g: "note", go: "notes" },
+    { name: "People", bg: "#2b6c80", g: "M12 8a3.2 3.2 0 100-.01M5.5 20a6.5 6.5 0 0113 0", go: "people" },
+  ].forEach((a) => {
+    const tile = el("span", "app-ic", icon(a.g));
     tile.style.background = a.bg;
-    const s = document.createElementNS(NS, "svg"), p = document.createElementNS(NS, "path");
-    s.setAttribute("viewBox", "0 0 24 24");
-    p.setAttribute("d", a.g);
-    s.append(p);
-    tile.append(s);
-    const row = document.createElement("button");
-    row.type = "button";
-    row.className = "app-row";
-    row.disabled = true;                       // demo: visual only
-    row.append(tile, document.createTextNode(a.name));
+    const row = button("app-row" + (a.go ? " m-only" : ""), tile, a.name);
+    if (a.go) row.dataset.go = a.go; else row.disabled = true;
     list.append(row);
   });
-
-  function go(view) {
-    closeApps();
-    const was = win.dataset.view;
-    if (view === "thrive" && was !== "thrive") from = was === "conv" ? "chats" : was;
-    win.dataset.view = view;
-    document.querySelectorAll("[data-go]").forEach((b) => b.classList.toggle("on", b.dataset.go === TAB[view]));
-    top.classList.toggle("sel", view !== "thrive");
-    thrive.classList.toggle("sel", view === "thrive");
-    if (view === "conv" || (view === "chats" && !narrow.matches)) top.classList.remove("unread");   // opened = read
-  }
 
   function openApps(btn) {
     opener = btn;
@@ -75,15 +107,21 @@
     if (opener) { opener.setAttribute("aria-expanded", "false"); opener = null; }
   }
 
-  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
-  document.querySelectorAll("[data-apps]").forEach((b) =>
-    b.addEventListener("click", () => (apps.hidden ? openApps(b) : closeApps())));
-  document.querySelectorAll("[data-back]").forEach((b) =>
-    b.addEventListener("click", () => go(win.dataset.view === "conv" ? "chats" : from)));
-  top.addEventListener("click", () => go("conv"));
-  top.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("conv"); } });
+  /* Delegated, so buttons that screens build later work too. */
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-go],[data-back],[data-apps]");
+    if (!t || t.disabled) return;
+    if (t.hasAttribute("data-apps")) apps.hidden ? openApps(t) : closeApps();
+    else if (t.hasAttribute("data-back")) back();
+    else go(t.dataset.go);
+  });
   document.getElementById("appThrive").addEventListener("click", () => go("thrive"));
   apps.addEventListener("click", (e) => { if (e.target === apps) closeApps(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeApps(); });
   window.addEventListener("resize", closeApps);
+  narrow.addEventListener("change", apply);
+
+  Object.assign(T, { go, back, reveal, narrow });
+  /* First layout once every screen has built its panes. */
+  document.addEventListener("DOMContentLoaded", apply);
 })();

@@ -1,0 +1,120 @@
+/* Calls, Files, Teams, Copilot, Notes, People, and the in-call screen
+   (calls.js, files.js, channels.js, extras.js). Rows reuse .chat-it from ordering.css. */
+.ic{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ic.dots{stroke-width:3.2}
+.m-only{display:none}
+@media (max-width:720px){ .d-only{display:none} .m-only{display:inline} }
+
+/* Wide lists (call history, files, people): comfortable rows with trailing actions */
+.pane.wide .cl-scroll{padding:0 14px 16px}
+.pane.wide .chat-it{padding:10px 12px;gap:14px}
+.call-acts{display:flex;gap:2px;flex:0 0 auto}
+.call-acts .btn-ic svg{width:19px;height:19px}
+
+/* ---------- Calls ---------- */
+.call-it.missed .cname{color:#e0464d}
+.call-dir .ic{width:14px;height:14px;flex:0 0 14px;color:var(--muted)}
+.call-it.missed .call-dir .ic{color:#e0464d}
+.cp-body{display:flex;flex-direction:column;gap:12px;padding:4px 18px 16px;overflow-y:auto}
+.cp-q{height:36px;padding:0 12px;border-radius:4px;border:1px solid var(--border);border-bottom:2px solid var(--brand);
+  background:var(--panel);color:var(--text);font:inherit;font-size:14px;outline:0}
+.cp-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cp-key{display:flex;flex-direction:column;align-items:center;justify-content:center;height:50px;border-radius:8px;border:0;
+  background:var(--panel);color:var(--strong);cursor:pointer;font-family:inherit}
+.cp-key:hover{background:var(--panel-2)}
+.cp-key b{font-size:18px;font-weight:600;line-height:1.1}
+.cp-key small{font-size:9.5px;letter-spacing:.08em;color:var(--muted);min-height:11px}
+.cp-make{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px}
+.cp-make .ic{width:16px;height:16px}
+.cp-label{margin-top:6px;color:var(--muted);font-size:12px;font-weight:600}
+.cp-speed{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cp-person{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 2px;border:0;border-radius:8px;background:none;
+  color:var(--text);font:500 12px/1.2 var(--font);cursor:pointer}
+.cp-person:hover{background:var(--panel-2)}
+
+/* In-call screen, over the whole Teams window */
+.callx{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:64px 20px 36px;background:#1b1a2e;color:#fff;animation:callx-in .18s ease-out}
+.callx-who{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6vh}
+.cava.callx-ava{width:112px;height:112px;font-size:38px;box-shadow:0 0 0 0 rgba(127,133,245,.6);animation:callx-ring 1.4s ease-out infinite}
+.cava.callx-ava.live{animation:none;box-shadow:0 0 0 4px rgba(146,195,83,.8)}
+.callx-name{font-size:22px;font-weight:700}
+.callx-status{color:#c7c9f5;font-size:15px;font-variant-numeric:tabular-nums}
+.callx-bar{display:flex;gap:14px}
+.btn-ic.callx-btn{width:56px;height:56px;border-radius:50%;justify-content:center;align-items:center;background:rgba(255,255,255,.12);color:#fff}
+.btn-ic.callx-btn:hover{background:rgba(255,255,255,.22);color:#fff}
+.btn-ic.callx-btn[aria-pressed="true"]{background:#fff;color:#1b1a2e}
+.btn-ic.callx-btn svg{width:24px;height:24px}
+.btn-ic.callx-end{background:#c4314b}
+.btn-ic.callx-end:hover{background:#a52a40}
+.callx-end svg{transform:rotate(135deg)}
+@keyframes callx-in{from{opacity:0}}
+@keyframes callx-ring{70%{box-shadow:0 0 0 22px rgba(127,133,245,0)}100%{box-shadow:0 0 0 0 rgba(127,133,245,0)}}
+
+/* ---------- Files ---------- */
+.fl-cols{display:flex;justify-content:space-between;padding:6px 80px 6px 76px;color:var(--muted);font-size:12px;font-weight:600;
+  border-bottom:1px solid var(--border);margin:0 14px}
+.fl-tile{width:36px;height:40px;border-radius:5px;flex:0 0 auto;display:grid;place-items:center;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.02em}
+.btn-ic.fl-star[aria-pressed="true"]{color:#e3a21a}
+.btn-ic.fl-star[aria-pressed="true"] svg{fill:currentColor}
+
+/* ---------- Teams ---------- */
+.tm-head{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-top:4px;border-radius:6px;cursor:pointer}
+.tm-head:hover{background:var(--panel-2)}
+.tm-head .cname{font-weight:700;color:var(--strong)}
+.tm-chev{width:12px;height:12px;flex:0 0 auto;color:var(--muted);transition:transform .15s}
+.tm-head.shut .tm-chev{transform:rotate(-90deg)}
+.tm-tile{width:32px;height:32px;border-radius:6px;flex:0 0 auto;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700}
+.tm-tile.cv-ava{width:32px;height:32px}
+.tm-chan{display:flex;align-items:center;gap:10px;padding:7px 10px 7px 64px;border-radius:6px;color:var(--text);font-size:13.5px;cursor:pointer}
+.tm-chan:hover{background:var(--panel-2)}
+.tm-chan.sel{background:var(--panel-2);color:var(--strong);font-weight:600}
+.tm-chan .ic{width:14px;height:14px;color:var(--muted);flex:0 0 auto}
+.tm-chan.folded,.tm-chan[hidden]{display:none}
+.ch-posts{display:flex;flex-direction:column;gap:12px;padding:16px 20px}
+.ch-post{display:flex;gap:12px;padding:14px 16px;border-radius:8px;background:var(--panel);border:1px solid var(--border)}
+.cava.ch-ava{width:32px;height:32px;font-size:12px}
+.ch-body{min-width:0}
+.ch-body p{margin:4px 0 0;color:var(--text);overflow-wrap:break-word}
+.ch-replies{margin-top:8px;color:var(--link);font-size:12.5px;font-weight:600}
+.ch-empty{padding:40px 0;text-align:center;color:var(--muted)}
+
+/* ---------- Copilot ---------- */
+.co-logo{display:grid;place-items:center;width:56px;height:56px;border-radius:16px;color:#fff;
+  background:linear-gradient(135deg,#5b5fc7,#0f6cbd 55%,#2bb5a6)}
+.co-logo .ic{width:30px;height:30px;stroke-width:1.8}
+.co-logo.sm{width:28px;height:28px;border-radius:8px;flex:0 0 auto}
+.co-logo.sm .ic{width:16px;height:16px}
+.co-hero{display:flex;flex-direction:column;align-items:center;gap:6px;padding:48px 20px 20px;text-align:center}
+.co-hero h2{margin:10px 0 0;font-size:22px;color:var(--strong)}
+.co-hero p{margin:0;color:var(--muted)}
+.co-thread{padding-bottom:10px}
+.co-reply{align-items:flex-start}
+.co-reply p{white-space:pre-line}
+.co-typing{color:var(--muted);letter-spacing:.2em}
+.co-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 16px 4px}
+
+/* ---------- Notes ---------- */
+.nt-ic{width:36px;height:36px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;background:#b3740f;color:#fff}
+.nt-ic .ic{width:19px;height:19px}
+.topbar .nt-ic{width:30px;height:30px}
+.nt-page{max-width:720px;padding:20px 28px}
+.nt-date{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.nt-body{white-space:pre-line;color:var(--text);font-size:15px;line-height:1.7}
+.notepane .topbar{padding-bottom:10px;border-bottom:1px solid var(--border)}
+.chat-it.nt-it.sel{background:var(--panel-2)}
+
+@media (max-width:720px){
+  .callx{position:fixed}
+  .fl-cols{display:none}
+  .pane.wide .cl-scroll{padding:0 6px 12px}
+  .pane.wide .chat-it{padding:10px 8px;gap:12px}
+  .ch-posts{padding:12px}
+  .co-hero{padding-top:28px}
+  .co-chips{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
+  .nt-page{padding:16px}
+  .tm-chan{padding-left:56px}
+}
+html[data-theme="light"] .callx{background:#24234a}
+.dot.off{background:#8a8a8a}
+@media (max-width:720px){ html .tm-chan.sel,html .chat-it.nt-it.sel{background:none;font-weight:inherit} }
