@@ -13,6 +13,8 @@
  * - A cue appears only once its target has held still for a few frames, so it never
  *   chases a bubble that is still animating in.
  * - Nodes are built with createElement/textContent; positions are set through CSSOM.
+ * - The tip goes below its target, or right, above, or left of it: the first spot that fits on
+ *   screen and covers none of the conversation's text, cards, buttons, or form fields.
  * - Reads the Teams UI's DOM only; ordering.js and nav.js know nothing about cues.
  */
 "use strict";
@@ -21,6 +23,9 @@
   const SETTLE_MS = 900;   // keep tracking this long after the last change
   const STABLE = 3;        // frames a target must hold still before the cue shows
   const PAD = 4;           // ring padding around the target, px
+  /* What a tip must not cover: the conversation's text, cards and buttons, form fields, and tabs. */
+  const CONTENT = "#chat .body > p, #chat .nm, #chat .ds, #chat .cardname, #chat .fname, #chat .tile, #chat .mimg img, " +
+    "#chat .chip, #chat .btn, #chat .ci, .modal .fld, .modal .btn, .tabs .tab, .app-row, .rit, .mnav button";
   const narrow = window.matchMedia("(max-width:720px)");   // Teams' single-column layout
 
   const read = () => { try { return localStorage.getItem(KEY); } catch (_) { return null; } };
@@ -118,19 +123,37 @@
     ring.style.width = r.width + PAD * 2 + "px";
     ring.style.height = r.height + PAD * 2 + "px";
 
-    const tw = tip.offsetWidth, th = tip.offsetHeight, gap = PAD + 10, mid = r.left + r.width / 2;
-    const above = r.top + r.height / 2 > H * 0.55 || r.bottom + gap + th > H - 8;
-    const x = Math.max(8, Math.min(mid - tw / 2, W - tw - 8));
-    const y = above ? r.top - gap - th : r.bottom + gap;
-    tip.classList.toggle("above", above);
-    tip.style.transform = `translate(${x}px,${Math.max(8, y)}px)`;
-    tip.style.setProperty("--ax", Math.max(14, Math.min(mid - x, tw - 14)) + "px");
+    const tw = tip.offsetWidth, th = tip.offsetHeight, gap = PAD + 10;
+    const midX = r.left + r.width / 2, midY = r.top + r.height / 2;
+    const clampX = (x) => Math.max(8, Math.min(x, W - tw - 8));
+    /* Candidate spots in order of preference: below, right, below the whole button row, above,
+       left. The first that fits on screen and covers no content (message text, cards, buttons,
+       form fields) wins; otherwise below, or above when below is off-screen. */
+    const group = el.closest(".actions,.chips");          // a wrapped row of buttons or chips
+    const spots = [
+      { side: "below", x: clampX(midX - tw / 2), y: r.bottom + gap },
+      { side: "right", x: r.right + gap, y: midY - th / 2 },
+      group && { side: "below", x: clampX(midX - tw / 2), y: group.getBoundingClientRect().bottom + gap },
+      { side: "above", x: clampX(midX - tw / 2), y: r.top - gap - th },
+      { side: "left", x: r.left - gap - tw, y: midY - th / 2 },
+    ];
+    const fits = (s) => s.x >= 8 && s.y >= 8 && s.x + tw <= W - 8 && s.y + th <= H - 8;
+    const content = [...document.querySelectorAll(CONTENT)].filter((n) => n !== el && !n.contains(el) && !el.contains(n))
+      .map((n) => n.getBoundingClientRect()).filter((b) => b.width && b.height);
+    const clear = (s) => !content.some((b) => b.left < s.x + tw && b.right > s.x && b.top < s.y + th && b.bottom > s.y);
+    const spot = spots.find((s) => s && fits(s) && clear(s)) || (fits(spots[0]) ? spots[0] : spots[2]);
+
+    tip.className = "cue-tip " + spot.side + (tip.classList.contains("jump") ? " jump" : "");
+    tip.style.transform = `translate(${spot.x}px,${Math.max(8, spot.y)}px)`;
+    /* arrow position: --ax along the top/bottom edge, --ay along the left/right edge */
+    tip.style.setProperty("--ax", Math.max(14, Math.min(midX - spot.x, tw - 14)) + "px");
+    tip.style.setProperty("--ay", Math.max(10, Math.min(midY - Math.max(8, spot.y), th - 10)) + "px");
     return true;
   }
 
   function placeJump() {
     if (!layer.firstChild) layer.append(tip);
-    tip.classList.remove("above");
+    tip.classList.remove("above", "below", "right", "left");
     tip.style.removeProperty("--ax");
     const composer = document.querySelector(".composer");
     const bottom = composer ? composer.getBoundingClientRect().top : innerHeight;

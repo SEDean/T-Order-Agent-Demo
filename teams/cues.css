@@ -17,6 +17,9 @@ html[data-theme="light"]{ --cue:#D98200; --cue-soft:rgba(217,130,0,.6); --cue-gl
   background:inherit; border:inherit; border-width:1px 0 0 1px; transform:rotate(45deg);
 }
 .cue-tip.above::before{top:auto; bottom:-5px; border-width:0 1px 1px 0}
+.cue-tip.right::before,.cue-tip.left::before{top:var(--ay,50%); margin:-5px 0 0}
+.cue-tip.right::before{left:-5px; border-width:0 0 1px 1px}
+.cue-tip.left::before{left:auto; right:-5px; border-width:1px 1px 0 0}
 .cue-tip.jump::before{display:none}
 .cue-label{min-width:0; overflow:hidden; text-overflow:ellipsis}
 .cue-go,.cue-x{appearance:none; pointer-events:auto; cursor:pointer; border:0; color:#fff; font:inherit}

@@ -159,11 +159,20 @@
         actions(b,[{label:"Add to Cart",kind:"primary",on:()=>addItem(id)},{label:"↩︎ Back",kind:"ghost",on:()=>chooseCat(catOf(id))}]); },300);
       return;
     }
-    const g=groups[0], req=g.req||(g.name||"").toLowerCase().startsWith("choice of protein");   // required: no "No thanks"
+    const g=groups[0], req=(g.name||"").toLowerCase().startsWith("choice of protein");
     bot(b=>{
       b.append(el("p",null,"Customize ",el("b",null,it.name),". ",el("b",null,g.name),req?" (pick one):":" (optional):"));
-      pick(b,g.mods.map(m=>({label:m.name+(m.price?" (+"+money(m.price)+")":""),on:()=>addItem(id,m.price,m.name)}))
-        .concat(req?[]:[{label:"No thanks",on:()=>addItem(id)}]));
+      pick(b,g.mods.map(m=>({label:m.name+(m.price?" (+"+money(m.price)+")":""),on:()=>confirmOption(id,m)}))
+        .concat(req?[]:[{label:"No thanks",on:()=>confirmOption(id,null)}]));
+    },300);
+  }
+  /* Choosing an option (or "No thanks") only stages it: nothing goes in the cart until Add to Cart. */
+  function confirmOption(id,m){
+    const it=ITEM[id]; you(m?m.name:"No thanks");
+    bot(b=>{
+      b.append(el("p",null,el("b",null,it.name),m?" with "+m.name:"",": "+money(it.price+(m?m.price:0))));
+      actions(b,[{label:"Add to Cart",kind:"primary",on:()=>m?addItem(id,m.price,m.name):addItem(id)},
+        {label:"↩︎ Back",kind:"ghost",on:()=>chooseCat(catOf(id))}]);
     },300);
   }
   /* Slack/Teams render chips inside the message body — chips(body,defs); WhatsApp renders a
