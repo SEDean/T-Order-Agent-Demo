@@ -138,7 +138,7 @@
           el("div",{class:"ds"},it.desc));
         actions(box,[
           {label:"Add to Cart",kind:"primary",on:()=>addItem(it.id)},
-          {label:"View Options",kind:"ghost",on:()=>viewOptions(it.id)},
+          hasOptions(it)&&{label:"View Options",kind:"ghost",on:()=>viewOptions(it.id)},
         ]);
         list.append(box);
       });
@@ -149,6 +149,8 @@
       ]);
     });
   }
+  /* "View Options" shows only for items with at least one modifier group. */
+  const hasOptions=it=>(it.groups||[]).some(g=>g.mods&&g.mods.length);
   function viewOptions(id){
     const it=ITEM[id]; you("View options — "+it.name);
     const groups=(it.groups||[]).filter(g=>g.mods&&g.mods.length);
@@ -157,7 +159,7 @@
         actions(b,[{label:"Add to Cart",kind:"primary",on:()=>addItem(id)},{label:"↩︎ Back",kind:"ghost",on:()=>chooseCat(catOf(id))}]); },300);
       return;
     }
-    const g=groups[0], req=(g.name||"").toLowerCase().startsWith("choice of protein");
+    const g=groups[0], req=g.req||(g.name||"").toLowerCase().startsWith("choice of protein");   // required: no "No thanks"
     bot(b=>{
       b.append(el("p",null,"Customize ",el("b",null,it.name),". ",el("b",null,g.name),req?" (pick one):":" (optional):"));
       pick(b,g.mods.map(m=>({label:m.name+(m.price?" (+"+money(m.price)+")":""),on:()=>addItem(id,m.price,m.name)}))
