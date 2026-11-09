@@ -90,12 +90,20 @@
     defs.forEach(d=>w.append(el("button",{class:"chip",type:"button",onclick:()=>{if(!state.busy)d.on();}},d.label)));
     body.append(w);
   }
+  /* Makes a card's picture do the same as its primary button (tap, click, Enter or Space). */
+  function tappable(node,label,on){
+    node.setAttribute("role","button"); node.tabIndex=0; node.setAttribute("aria-label",label);
+    const go=()=>{if(!state.busy)on();};
+    node.addEventListener("click",go);
+    node.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
+    return node;
+  }
   function tile(obj,onSelect){
     const card=el("div",{class:"imgcard"},
       el("div",{class:"fname"},el("span",null,obj.name+" · image"),el("span",null,"▾")),
-      el("div",{class:"tile",style:`background:linear-gradient(135deg,${obj.a},${obj.b})`},
+      tappable(el("div",{class:"tile",style:`background:linear-gradient(135deg,${obj.a},${obj.b})`},
         IMG[obj.id]?el("img",{class:"ph",src:IMG[obj.id],alt:obj.name}):el("div",{class:"emoji"},obj.emoji),
-        el("div",{class:"cap"},obj.name)),
+        el("div",{class:"cap"},obj.name)),"Select "+obj.name,onSelect),
       el("div",{class:"cardname"}, obj.note?obj.name+" — "+obj.note:obj.name));
     actions(card,[{label:"Select",kind:"primary",on:onSelect}]);
     return card;
@@ -125,7 +133,7 @@
       const list=el("div",{class:"items"});
       ITEMS[id].forEach(it=>{
         const box=el("div",{class:"item"},
-          IMG[it.id]?el("div",{class:"mimg"},el("img",{src:IMG[it.id],alt:it.name})):null,
+          IMG[it.id]?tappable(el("div",{class:"mimg"},el("img",{src:IMG[it.id],alt:it.name})),"Add "+it.name+" to cart",()=>addItem(it.id)):null,
           el("div",{class:"line1"},el("span",{class:"nm"},it.name),el("span",{class:"pr"},"• "+money(it.price))),
           el("div",{class:"ds"},it.desc));
         actions(box,[
@@ -344,7 +352,8 @@
   function setTab(name){ state.tab=name;
     document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.tab===name)));
     document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.dataset.panel===name));
-    if(name==="messages"){ clearUnread(); down(); $("#cinput").focus(); } }
+    /* Focus the composer only with a mouse or trackpad: on touch screens it would pop up the keyboard. */
+    if(name==="messages"){ clearUnread(); down(); if(matchMedia("(hover:hover) and (pointer:fine)").matches) $("#cinput").focus(); } }
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>setTab(t.dataset.tab)));
   $("#changeLoc").addEventListener("click",()=>{ state.locIdx=(state.locIdx+1)%LOCATIONS.length;
     $("#locName").textContent=LOCATIONS[state.locIdx]; toast("Location set to "+LOCATIONS[state.locIdx]); });
