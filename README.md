@@ -19,27 +19,22 @@ There is no `CNAME` on `main`, so none is added here. If a custom domain is ever
 - **Theme:** set by `data-brand` on `<html>`. The tokens live in the `[data-brand="compass-digital"]` rule.
 - **After any edit**, copy `index.html` over `404.html` again.
 
-## One-time setup: create the branch
+## Where this branch lives
 
-These commands work the same in Git Bash and PowerShell. Use the full path in forward slashes, as shown. A relative path like `..\eurest-placeholder` can end up as a folder called `..eurest-placeholder` inside the repo. You need Git 2.42 or later for `--orphan`; `git --version` shows yours.
+The `placeholder` branch is checked out as its own worktree in `C:/Users/FujioD01/Claude/Projects/eurest-placeholder`, next to the main repo folder. Edit the files in this folder directly. `main` is never touched.
 
-The placeholder goes in a sibling folder, `C:/Users/FujioD01/Claude/Projects/eurest-placeholder`, so your `main` working copy is never touched.
+## Updating the page
 
-```sh
-cd "C:/Users/FujioD01/Claude/Projects/eurest-cafe-teams-agent"
-git fetch origin
-git worktree add --orphan -b placeholder "C:/Users/FujioD01/Claude/Projects/eurest-placeholder"
-```
-
-1. Unzip `placeholder.zip` into `C:/Users/FujioD01/Claude/Projects/eurest-placeholder`. Include the hidden `.nojekyll` file.
-2. Commit and push:
+Edit the files here, then commit and push from this folder:
 
 ```sh
 cd "C:/Users/FujioD01/Claude/Projects/eurest-placeholder"
 git add -A
-git commit -m "Add coming-soon placeholder page"
-git push -u origin placeholder
+git commit -m "Update placeholder page"
+git push
 ```
+
+While Pages is serving `placeholder`, each push redeploys the page in about a minute.
 
 ## Flip on (show the placeholder)
 
